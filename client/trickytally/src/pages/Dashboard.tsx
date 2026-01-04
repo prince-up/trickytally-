@@ -104,36 +104,7 @@ const Dashboard = () => {
 
           {stats?.recentSessions && stats.recentSessions.length > 0 ? (
             <div style={styles.sessionList}>
-              {stats.recentSessions.map((session) => (
-                <Link
-                  key={session._id}
-                  to={`/sessions/${session._id}`}
-                  style={styles.sessionCard}
-                >
-                  <div style={styles.sessionHeader}>
-                    <h3 style={styles.sessionGame}>{session.gameType.toUpperCase()}</h3>
-                    <span style={styles.sessionDate}>
-                      {new Date(session.sessionDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p style={styles.sessionInfo}>
-                    {session.players.length} players • {session.totalRounds} rounds •{' '}
-                    {session.duration} min
-                  </p>
-                  <p
-                    style={{
-                      ...styles.sessionProfit,
-                      color:
-                        session.players.reduce((sum, p) => sum + p.profitLoss, 0) >= 0
-                          ? '#10b981'
-                          : '#ef4444',
-                    }}
-                  >
-                    ₹
-                    {session.players
-                      .reduce((sum, p) => sum + p.profitLoss, 0)
-                      .toFixed(2)}
-                  </p>{
+              {stats.recentSessions.map((session) => {
                 const winner = session.players.reduce((max, p) => 
                   p.totalPoints > max.totalPoints ? p : max, session.players[0]);
                 
@@ -144,7 +115,7 @@ const Dashboard = () => {
                     style={styles.sessionCard}
                   >
                     <div style={styles.sessionHeader}>
-                      <h3 style={styles.sessionGame}>CALL BREAK</h3>
+                      <h3 style={styles.sessionGame}>Call Break</h3>
                       <span style={styles.sessionDate}>
                         {new Date(session.sessionDate).toLocaleDateString()}
                       </span>
@@ -157,26 +128,66 @@ const Dashboard = () => {
                     </p>
                   </Link>
                 );
-              }rid',
+              })}
+            </div>
+          ) : (
+            <p style={styles.emptyText}>No sessions yet. Create your first session!</p>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
+const styles: { [key: string]: React.CSSProperties } = {
+  container: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '2rem',
+    background: 'linear-gradient(135deg, #0f5132 0%, #1a4d2e 50%, #0f5132 100%)',
+    minHeight: '100vh',
+    backgroundImage: `
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.03) 0%, transparent 50%)
+    `,
+  },
+  title: {
+    fontSize: '2.5rem',
+    fontWeight: 'bold',
+    marginBottom: '2rem',
+    color: '#ffd700',
+    textAlign: 'center',
+    textShadow: '3px 3px 6px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.3)',
+    letterSpacing: '2px',
+  },
+  statsGrid: {
+    display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
     gap: '1.5rem',
     marginBottom: '3rem',
   },
   statCard: {
-    backgroundColor: 'white',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    backgroundColor: '#2d6a4f',
+    padding: '2rem',
+    borderRadius: '12px',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+    border: '3px solid #ffd700',
+    textAlign: 'center',
+    transition: 'transform 0.3s ease',
   },
   statLabel: {
-    fontSize: '0.9rem',
-    color: '#6b7280',
-    marginBottom: '0.5rem',
+    fontSize: '1rem',
+    color: '#ffd700',
+    marginBottom: '0.75rem',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    fontWeight: '600',
   },
   statValue: {
-    fontSize: '2rem',
+    fontSize: '2.5rem',
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#ffffff',
+    textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
   },
   section: {
     marginBottom: '3rem',
@@ -185,94 +196,76 @@ const Dashboard = () => {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '1rem',
+    marginBottom: '1.5rem',
   },
   sectionTitle: {
-    fontSize: '1.5rem',
+    fontSize: '1.8rem',
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#ffd700',
+    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
   },
   viewAllLink: {
-    color: '#3b82f6',
+    color: '#ffd700',
     textDecoration: 'none',
-    fontSize: '1rem',
-  },
-  gameGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '1rem',
-  },
-  gameCard: {
-    backgroundColor: 'white',
-    padding: '1.5rem',
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    padding: '0.5rem 1rem',
+    border: '2px solid #ffd700',
     borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-    textAlign: 'center',
-  },
-  gameType: {
-    fontSize: '1.2rem',
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: '0.5rem',
-  },
-  gameInfo: {
-    color: '#6b7280',
-    marginBottom: '0.5rem',
-  },
-  gameProfit: {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
+    transition: 'all 0.3s ease',
+    backgroundColor: 'rgba(255,215,0,0.1)',
   },
   sessionList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem',
+    display: 'grid',
+    gap: '1.5rem',
   },
   sessionCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#2d6a4f',
     padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    borderRadius: '12px',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+    border: '2px solid #ffd700',
     textDecoration: 'none',
-    transition: 'box-shadow 0.2s',
+    display: 'block',
+    transition: 'transform 0.2s, box-shadow 0.2s',
   },
   sessionHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '0.5rem',
+    marginBottom: '1rem',
   },
   sessionGame: {
-    fontSize: '1.2rem',
-    fontWeight: 'bold',
-    color: '#1f2937',
-  },
-  sessionDate: {
-    color: '#6b7280',
-    fontSize: '0.9rem',
-  },
-  sessionInfo: {
-    color: '#6b7280',
-    marginBottom: '0.5rem',
-  },
-  sessionProfit: {
     fontSize: '1.3rem',
     fontWeight: 'bold',
+    color: '#ffd700',
+    margin: 0,
+    textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
   },
-  emptyState: {
-    textAlign: 'center',
+  sessionDate: {
+    color: '#ffffff',
+    fontSize: '0.95rem',
+    fontWeight: '500',
+  },
+  sessionInfo: {
+    color: '#b8e6d5',
+    fontSize: '0.95rem',
+    marginBottom: '0.75rem',
+  },
+  sessionProfit: {
+    fontSize: '1.2rem',
+    fontWeight: '700',
+    color: '#ffffff',
+    textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+  },
+  emptyText: {
+    textAlign: 'center' as const,
     padding: '3rem',
-    backgroundColor: 'white',
-    borderRadius: '8px',
-  },
-  createBtn: {
-    display: 'inline-block',
-    marginTop: '1rem',
-    backgroundColor: '#3b82f6',
-    color: 'white',
-    padding: '0.75rem 1.5rem',
-    borderRadius: '6px',
-    textDecoration: 'none',
+    color: '#ffd700',
+    backgroundColor: '#2d6a4f',
+    borderRadius: '12px',
+    border: '2px solid #ffd700',
+    fontSize: '1.1rem',
   },
 };
 

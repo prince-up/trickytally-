@@ -117,8 +117,7 @@ const SessionDetail = () => {
 
         <div style={styles.header}>
           <div>
-            <h1 style={styles.title}>{session.gameType.toUpperCase()} Session</h1>
-            <p style={styles.date}>Call Break Session</h1>
+            <h1 style={styles.title}>Call Break Session</h1>
             <p style={styles.date}>
               {new Date(session.sessionDate).toLocaleDateString('en-US', {
                 weekday: 'long',
@@ -148,7 +147,8 @@ const SessionDetail = () => {
           </div>
           <div style={styles.infoCard}>
             <h3 style={styles.infoLabel}>Winner</h3>
-            <p style={styles.infoValue}>{winner?.name
+            <p style={styles.infoValue}>{winner?.name}</p>
+          </div>
         </div>
 
         <div style={styles.section}>

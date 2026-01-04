@@ -69,60 +69,16 @@ const SessionList = () => {
           </Link>
         </div>
 
-        <div style={styles.filters}>
-          <button
-            onClick={() => setFilter('all')}
-            style={{
-              ...styles.filterBtn,
-        {s>
+        {sessions.length === 0 ? (
+          <div style={styles.emptyState}>
+            <p>No sessions found. Create your first Call Break session!</p>
+            <Link to="/create-session" style={styles.createBtnLarge}>
+              + Create Session
+            </Link>
           </div>
         ) : (
           <div style={styles.sessionGrid}>
-            {filteredSessions.map((session) => {
-              const totalProfit = session.players.reduce(
-                (sum, p) => sum + p.profitLoss,
-                0
-              );
-
-              return (
-                <Link
-                  key={session._id}
-                  to={`/sessions/${session._id}`}
-                  style={styles.sessionCard}
-                >
-                  <div style={styles.cardHeader}>
-                    <h3 style={styles.gameType}>
-                      {session.gameType.toUpperCase()}
-                    </h3>
-                    <span style={styles.date}>
-                      {new Date(session.sessionDate).toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  <div style={styles.cardBody}>
-                    <div style={styles.infoRow}>
-                      <span>👥 {session.players.length} players</span>
-                      <span>🎯 {session.totalRounds} rounds</span>
-                    </div>
-                    <div style={styles.infoRow}>
-                      <span>⏱️ {session.duration} min</span>
-                      {session.location && (
-                        <span>📍 {session.location}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div style={styles.cardFooter}>
-                    <span style={styles.profitLabel}>Total P/L:</span>
-                    <span
-                      style={{
-                        ...styles.profitValue,
-                        color: totalProfit >= 0 ? '#10b981' : '#ef4444',
-                      }}
-                    >
-                      ₹{totalProfit.toFixed(2)}
-                    </span>
-             sessions.map((session) => {
+            {sessions.map((session) => {
               const winner = session.players.reduce((max, p) => 
                 p.totalPoints > max.totalPoints ? p : max, session.players[0]);
 
@@ -133,7 +89,7 @@ const SessionList = () => {
                   style={styles.sessionCard}
                 >
                   <div style={styles.cardHeader}>
-                    <h3 style={styles.gameType}>CALL BREAK</h3>
+                    <h3 style={styles.gameType}>Call Break</h3>
                     <span style={styles.date}>
                       {new Date(session.sessionDate).toLocaleDateString()}
                     </span>
@@ -144,27 +100,54 @@ const SessionList = () => {
                       <span>👥 {session.players.length} players</span>
                       <span>🎯 {session.totalRounds} rounds</span>
                     </div>
-                    <div style={styles.infoRow}>
-                      {session.location && (
+                    {session.location && (
+                      <div style={styles.infoRow}>
                         <span>📍 {session.location}</span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
 
                   <div style={styles.cardFooter}>
                     <span style={styles.profitLabel}>Winner:</span>
                     <span style={styles.profitValue}>
-                      {winner?.name} ({winner?.totalPoints} pts)
-    border: '1px solid #d1d5db',
-    borderRadius: '6px',
-    backgroundColor: 'white',
-    cursor: 'pointer',
-    fontSize: '0.95rem',
+                      {winner.name} ({winner.totalPoints} pts)
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
+const styles: { [key: string]: React.CSSProperties } = {
+  container: {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '2rem',
   },
-  activeFilter: {
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '2rem',
+  },
+  title: {
+    fontSize: '2rem',
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  createBtn: {
     backgroundColor: '#3b82f6',
     color: 'white',
-    borderColor: '#3b82f6',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontSize: '1rem',
+    fontWeight: '600',
   },
   sessionGrid: {
     display: 'grid',
@@ -178,6 +161,7 @@ const SessionList = () => {
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
     textDecoration: 'none',
     transition: 'transform 0.2s, box-shadow 0.2s',
+    display: 'block',
   },
   cardHeader: {
     display: 'flex',
@@ -191,6 +175,7 @@ const SessionList = () => {
     fontSize: '1.3rem',
     fontWeight: 'bold',
     color: '#1f2937',
+    margin: 0,
   },
   date: {
     color: '#6b7280',
@@ -218,8 +203,9 @@ const SessionList = () => {
     fontWeight: '500',
   },
   profitValue: {
-    fontSize: '1.3rem',
+    fontSize: '1.1rem',
     fontWeight: 'bold',
+    color: '#1f2937',
   },
   emptyState: {
     textAlign: 'center',
@@ -236,10 +222,8 @@ const SessionList = () => {
     borderRadius: '6px',
     textDecoration: 'none',
     fontSize: '1.1rem',
+    fontWeight: '600',
   },
 };
 
 export default SessionList;
-rem',
-    fontWeight: 'bold',
-    color: '#1f2937
