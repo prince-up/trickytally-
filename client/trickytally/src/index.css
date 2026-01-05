@@ -94,11 +94,6 @@ button:focus-visible {
 /* Mobile-specific styles */
 @media (max-width: 768px) {
 
-  /* Force all containers to fit viewport */
-  * {
-    max-width: 100vw;
-  }
-
   /* Ensure all inputs fit on mobile */
   input,
   textarea,
