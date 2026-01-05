@@ -301,86 +301,89 @@ const CreateSession = () => {
                   </div>
                 </div>
 
-                <table style={styles.scoreTable}>
-                  <thead>
-                    <tr>
-                      <th style={styles.tableTh}>Player</th>
-                      <th style={styles.tableTh}>
-                        <div style={styles.headerWithIcon}>
-                          🎯 Call
-                        </div>
-                      </th>
-                      <th style={styles.tableTh}>
-                        <div style={styles.headerWithIcon}>
-                          ✓ Won
-                        </div>
-                      </th>
-                      <th style={styles.tableTh}>
-                        <div style={styles.headerWithIcon}>
-                          💰 Pts
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {round.playerScores.map((ps, pIndex) => {
-                      const points = calculatePoints(ps.call, ps.tricksWon);
-                      return (
-                        <tr key={pIndex} style={styles.tableRow}>
-                          <td style={styles.tableTdPlayer}>
-                            <input
-                              type="text"
-                              value={ps.playerName}
-                              onChange={(e) => {
-                                const newRounds = [...rounds];
-                                newRounds[rIndex].playerScores[pIndex].playerName = e.target.value;
-                                setRounds(newRounds);
-                              }}
-                              style={styles.playerNameInput}
-                              placeholder={`Player ${pIndex + 1}`}
-                            />
-                          </td>
-                          <td style={styles.tableTd}>
-                            <input
-                              type="number"
-                              value={ps.call === 0 ? '' : ps.call}
-                              onChange={(e) =>
-                                updatePlayerScore(rIndex, pIndex, 'call', parseInt(e.target.value) || 0)
-                              }
-                              style={styles.scoreInputModern}
-                              min="0"
-                              max="13"
-                            />
-                          </td>
-                          <td style={styles.tableTd}>
-                            <input
-                              type="number"
-                              value={ps.tricksWon === 0 ? '' : ps.tricksWon}
-                              onChange={(e) =>
-                                updatePlayerScore(rIndex, pIndex, 'tricksWon', parseInt(e.target.value) || 0)
-                              }
-                              style={styles.scoreInputModern}
-                              min="0"
-                              max="13"
-                            />
-                          </td>
-                          <td style={styles.tableTd}>
-                            <div style={{
-                              ...styles.pointsBadge,
-                              backgroundColor: points >= 0 ? 'rgba(0,255,0,0.15)' : 'rgba(255,0,0,0.15)',
-                              color: points >= 0 ? '#00ff00' : '#ff4444',
-                              border: points >= 0 ? '2px solid #00ff00' : '2px solid #ff4444',
-                              fontWeight: 'bold',
-                              textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                            }}>
-                              {points >= 0 ? '+' : ''}{points}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+
+                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <table style={styles.scoreTable}>
+                    <thead>
+                      <tr>
+                        <th style={styles.tableTh}>Player</th>
+                        <th style={styles.tableTh}>
+                          <div style={styles.headerWithIcon}>
+                            🎯 Call
+                          </div>
+                        </th>
+                        <th style={styles.tableTh}>
+                          <div style={styles.headerWithIcon}>
+                            ✓ Won
+                          </div>
+                        </th>
+                        <th style={styles.tableTh}>
+                          <div style={styles.headerWithIcon}>
+                            💰 Pts
+                          </div>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {round.playerScores.map((ps, pIndex) => {
+                        const points = calculatePoints(ps.call, ps.tricksWon);
+                        return (
+                          <tr key={pIndex} style={styles.tableRow}>
+                            <td style={styles.tableTdPlayer}>
+                              <input
+                                type="text"
+                                value={ps.playerName}
+                                onChange={(e) => {
+                                  const newRounds = [...rounds];
+                                  newRounds[rIndex].playerScores[pIndex].playerName = e.target.value;
+                                  setRounds(newRounds);
+                                }}
+                                style={styles.playerNameInput}
+                                placeholder={`Player ${pIndex + 1}`}
+                              />
+                            </td>
+                            <td style={styles.tableTd}>
+                              <input
+                                type="number"
+                                value={ps.call === 0 ? '' : ps.call}
+                                onChange={(e) =>
+                                  updatePlayerScore(rIndex, pIndex, 'call', parseInt(e.target.value) || 0)
+                                }
+                                style={styles.scoreInputModern}
+                                min="0"
+                                max="13"
+                              />
+                            </td>
+                            <td style={styles.tableTd}>
+                              <input
+                                type="number"
+                                value={ps.tricksWon === 0 ? '' : ps.tricksWon}
+                                onChange={(e) =>
+                                  updatePlayerScore(rIndex, pIndex, 'tricksWon', parseInt(e.target.value) || 0)
+                                }
+                                style={styles.scoreInputModern}
+                                min="0"
+                                max="13"
+                              />
+                            </td>
+                            <td style={styles.tableTd}>
+                              <div style={{
+                                ...styles.pointsBadge,
+                                backgroundColor: points >= 0 ? 'rgba(0,255,0,0.15)' : 'rgba(255,0,0,0.15)',
+                                color: points >= 0 ? '#00ff00' : '#ff4444',
+                                border: points >= 0 ? '2px solid #00ff00' : '2px solid #ff4444',
+                                fontWeight: 'bold',
+                                textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                              }}>
+                                {points >= 0 ? '+' : ''}{points}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ))}
           </div>
