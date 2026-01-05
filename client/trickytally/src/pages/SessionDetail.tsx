@@ -220,35 +220,37 @@ const SessionDetail = () => {
                 <h3 style={styles.roundTitle}>
                   Round {round.roundNumber} - Trump: {round.trump}
                 </h3>
-                <table style={styles.table}>
-                  <thead>
-                    <tr style={styles.tableHeader}>
-                      <th style={styles.th}>Player</th>
-                      <th style={styles.th}>Call</th>
-                      <th style={styles.th}>Tricks Won</th>
-                      <th style={styles.th}>Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {round.playerScores.map((ps, idx) => (
-                      <tr key={idx} style={styles.tableRow}>
-                        <td style={styles.td}>{ps.playerName}</td>
-                        <td style={styles.td}>{ps.call}</td>
-                        <td style={styles.td}>{ps.tricksWon}</td>
-                        <td
-                          style={{
-                            ...styles.td,
-                            color: ps.points >= 0 ? '#00ff00' : '#ff4444',
-                            fontWeight: 'bold',
-                            textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                          }}
-                        >
-                          {ps.points >= 0 ? '+' : ''}{ps.points.toFixed(1)}
-                        </td>
+                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <table style={styles.table}>
+                    <thead>
+                      <tr style={styles.tableHeader}>
+                        <th style={styles.th}>Player</th>
+                        <th style={styles.th}>Call</th>
+                        <th style={styles.th}>Tricks Won</th>
+                        <th style={styles.th}>Points</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {round.playerScores.map((ps, idx) => (
+                        <tr key={idx} style={styles.tableRow}>
+                          <td style={styles.td}>{ps.playerName}</td>
+                          <td style={styles.td}>{ps.call}</td>
+                          <td style={styles.td}>{ps.tricksWon}</td>
+                          <td
+                            style={{
+                              ...styles.td,
+                              color: ps.points >= 0 ? '#00ff00' : '#ff4444',
+                              fontWeight: 'bold',
+                              textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                            }}
+                          >
+                            {ps.points >= 0 ? '+' : ''}{ps.points.toFixed(1)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ))
           ) : (
@@ -429,6 +431,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   table: {
     width: '100%',
+    minWidth: '400px',
     borderCollapse: 'collapse',
   },
   tableHeader: {
