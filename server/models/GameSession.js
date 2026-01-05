@@ -19,7 +19,7 @@ const roundSchema = new mongoose.Schema({
         call: {
             type: Number,
             required: true,
-            min: 1,
+            min: 0,
             max: 13
         },
         tricksWon: {
@@ -90,7 +90,8 @@ const gameSessionSchema = new mongoose.Schema(
 );
 
 // Calculate player totals and round points before saving
-gameSessionSchema.pre('save', function(next) {
+// Updated to allow call values of 0
+gameSessionSchema.pre('save', async function () {
     // Calculate points for each round
     this.rounds.forEach(round => {
         round.playerScores.forEach(player => {
@@ -131,8 +132,6 @@ gameSessionSchema.pre('save', function(next) {
     });
 
     this.totalRounds = this.rounds.length;
-
-    next();
 });
 
 module.exports = mongoose.model('GameSession', gameSessionSchema);

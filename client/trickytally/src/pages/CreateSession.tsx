@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import API_URL from '../config';
 import Navbar from '../components/Navbar';
 
 interface PlayerScore {
@@ -20,15 +21,42 @@ const CreateSession = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
+  // Load saved data from localStorage
+  const loadSavedData = () => {
+    try {
+      const saved = localStorage.getItem('callbreak_draft_session');
+      if (saved) {
+        const data = JSON.parse(saved);
+        return data;
+      }
+    } catch (error) {
+      console.error('Error loading saved session:', error);
+    }
+    return null;
+  };
+
+  const savedData = loadSavedData();
+
+  const [formData, setFormData] = useState(savedData?.formData || {
     sessionDate: new Date().toISOString().split('T')[0],
     location: '',
     notes: '',
   });
 
-  const [playerNames, setPlayerNames] = useState<string[]>(['', '', '', '']);
-  const [rounds, setRounds] = useState<Round[]>([]);
+  const [playerNames, setPlayerNames] = useState<string[]>(savedData?.playerNames || ['', '', '', '']);
+  const [rounds, setRounds] = useState<Round[]>(savedData?.rounds || []);
   const [showPreview, setShowPreview] = useState(false);
+
+  // Auto-save to localStorage whenever data changes
+  useEffect(() => {
+    const dataToSave = {
+      formData,
+      playerNames,
+      rounds,
+      lastSaved: new Date().toISOString(),
+    };
+    localStorage.setItem('callbreak_draft_session', JSON.stringify(dataToSave));
+  }, [formData, playerNames, rounds]);
 
   const calculatePoints = (call: number, tricksWon: number): number => {
     return tricksWon >= call ? call : -call;
@@ -37,7 +65,7 @@ const CreateSession = () => {
   const calculateTotalPoints = () => {
     const validPlayers = playerNames.filter(n => n.trim() !== '');
     const totals: { [key: string]: number } = {};
-    
+
     validPlayers.forEach(name => {
       totals[name] = 0;
     });
@@ -71,7 +99,7 @@ const CreateSession = () => {
       trump: 'Spades',
       playerScores: playerNames.filter(n => n.trim()).map(name => ({
         playerName: name,
-        call: 1,
+        call: 0,
         tricksWon: 0,
       })),
     };
@@ -101,9 +129,24 @@ const CreateSession = () => {
     setRounds(rounds.filter((_, i) => i !== index));
   };
 
+  const clearAllData = () => {
+    if (window.confirm('Are you sure you want to clear all data? This will erase all players, rounds, and notes.')) {
+      setFormData({
+        sessionDate: new Date().toISOString().split('T')[0],
+        location: '',
+        notes: '',
+      });
+      setPlayerNames(['', '', '', '']);
+      setRounds([]);
+      setShowPreview(false);
+      localStorage.removeItem('callbreak_draft_session');
+      alert('All data cleared! You can start fresh.');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const validPlayers = playerNames.filter(n => n.trim() !== '');
     if (validPlayers.length < 2) {
       alert('Please add at least 2 players');
@@ -124,7 +167,9 @@ const CreateSession = () => {
         rounds: rounds,
       };
 
-      const response = await fetch('http://localhost:5000/api/sessions', {
+      console.log('Sending session data:', JSON.stringify(sessionData, null, 2));
+
+      const response = await fetch(`${API_URL}/api/sessions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,9 +181,24 @@ const CreateSession = () => {
       const data = await response.json();
 
       if (data.success) {
-        navigate('/sessions');
+        // Clear saved draft after successful save
+        localStorage.removeItem('callbreak_draft_session');
+
+        // Reset all form data for next game
+        setFormData({
+          sessionDate: new Date().toISOString().split('T')[0],
+          location: '',
+          notes: '',
+        });
+        setPlayerNames(['', '', '', '']);
+        setRounds([]);
+        setShowPreview(false);
+
+        // Navigate to dashboard
+        navigate('/dashboard');
       } else {
-        alert(data.message || 'Failed to create session');
+        console.error('Server error:', data);
+        alert(`Failed to create session: ${data.message}\n${data.error || ''}`);
       }
     } catch (error) {
       console.error('Error creating session:', error);
@@ -152,7 +212,17 @@ const CreateSession = () => {
     <>
       <Navbar />
       <div style={styles.container}>
-        <h1 style={styles.title}>Create New Call Break Session</h1>
+        <div style={styles.headerSection}>
+          <h1 style={styles.title}>Create New Call Break Session</h1>
+          <button
+            type="button"
+            onClick={clearAllData}
+            style={styles.clearBtn}
+            title="Clear all data and start fresh"
+          >
+            🔄 Clear All
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.formRow}>
@@ -272,35 +342,35 @@ const CreateSession = () => {
                           <td style={styles.tableTd}>
                             <input
                               type="number"
-                              value={ps.call}
+                              value={ps.call === 0 ? '' : ps.call}
                               onChange={(e) =>
-                                updatePlayerScore(rIndex, pIndex, 'call', parseInt(e.target.value) || 1)
+                                updatePlayerScore(rIndex, pIndex, 'call', parseInt(e.target.value) || 0)
                               }
                               style={styles.scoreInputModern}
-                              min="1"
+                              min="0"
                               max="13"
-                              placeholder="1-13"
                             />
                           </td>
                           <td style={styles.tableTd}>
                             <input
                               type="number"
-                              value={ps.tricksWon}
+                              value={ps.tricksWon === 0 ? '' : ps.tricksWon}
                               onChange={(e) =>
                                 updatePlayerScore(rIndex, pIndex, 'tricksWon', parseInt(e.target.value) || 0)
                               }
                               style={styles.scoreInputModern}
                               min="0"
                               max="13"
-                              placeholder="0-13"
                             />
                           </td>
                           <td style={styles.tableTd}>
                             <div style={{
                               ...styles.pointsBadge,
-                              backgroundColor: points >= 0 ? '#d1fae5' : '#fee2e2',
-                              color: points >= 0 ? '#065f46' : '#991b1b',
-                              border: points >= 0 ? '2px solid #10b981' : '2px solid #ef4444',
+                              backgroundColor: points >= 0 ? 'rgba(0,255,0,0.15)' : 'rgba(255,0,0,0.15)',
+                              color: points >= 0 ? '#00ff00' : '#ff4444',
+                              border: points >= 0 ? '2px solid #00ff00' : '2px solid #ff4444',
+                              fontWeight: 'bold',
+                              textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
                             }}>
                               {points >= 0 ? '+' : ''}{points}
                             </div>
@@ -356,7 +426,8 @@ const CreateSession = () => {
                               ...styles.tableTd,
                               fontWeight: 'bold',
                               fontSize: '1.1rem',
-                              color: points >= 0 ? '#10b981' : '#ef4444'
+                              color: points >= 0 ? '#00ff00' : '#ff4444',
+                              textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
                             }}>
                               {points >= 0 ? '+' : ''}{points}
                             </td>
@@ -364,10 +435,6 @@ const CreateSession = () => {
                         ))}
                     </tbody>
                   </table>
-                  <p style={styles.helperText}>
-                    <strong>Scoring Rules:</strong> If tricks won ≥ call, you get +{'{'}call{'}'} points. 
-                    Otherwise, you get -{'{'}call{'}'} points.
-                  </p>
                 </div>
               )}
             </div>
@@ -395,12 +462,19 @@ const styles: { [key: string]: React.CSSProperties } = {
       repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px)
     `,
   },
+  headerSection: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '2rem',
+    gap: '1rem',
+    flexWrap: 'wrap',
+  },
   title: {
     fontSize: '2.8rem',
     fontWeight: 'bold',
-    marginBottom: '2rem',
+    margin: 0,
     color: '#ffd700',
-    textAlign: 'center',
     textShadow: '3px 3px 6px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.3)',
     letterSpacing: '2px',
   },
@@ -598,7 +672,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#000000 !important',
     boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
     WebkitTextFillColor: '#000000',
-  },
+    MozAppearance: 'textfield',
+  } as React.CSSProperties & { MozAppearance?: string },
   inputLabel: {
     fontSize: '0.85rem',
     color: '#6b7280',
@@ -631,7 +706,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '1.5rem',
     fontWeight: 'bold',
     color: '#ffffff',
-    textShadow: '1px 1px 3px rgba(0,0,0,0.3)',
+    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
   },
   addBtn: {
     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
@@ -648,13 +723,15 @@ const styles: { [key: string]: React.CSSProperties } = {
   playerInput: {
     width: '100%',
     padding: '0.875rem',
-    border: '2px solid #ffffff',
+    border: '2px solid #ffd700',
     borderRadius: '8px',
     fontSize: '1rem',
     fontWeight: '500',
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: '#ffffff',
+    color: '#000000 !important',
     transition: 'all 0.3s ease',
     outline: 'none',
+    WebkitTextFillColor: '#000000',
   },
   removeBtn: {
     background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
@@ -733,6 +810,19 @@ const styles: { [key: string]: React.CSSProperties } = {
     transition: 'all 0.3s ease',
     textTransform: 'uppercase',
     letterSpacing: '1px',
+  },
+  clearBtn: {
+    padding: '0.875rem 1.75rem',
+    background: 'linear-gradient(135deg, #ff8c00 0%, #ffa500 100%)',
+    color: '#ffffff',
+    border: '2px solid #ffd700',
+    borderRadius: '10px',
+    fontSize: '1rem',
+    fontWeight: '700',
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    transition: 'all 0.3s ease',
+    whiteSpace: 'nowrap',
   },
 };
 

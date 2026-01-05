@@ -7,12 +7,17 @@ const GameSession = require('../models/GameSession');
 // @access  Private
 exports.createGameSession = async (req, res) => {
     try {
+        console.log('📝 Creating game session...');
+        console.log('User ID:', req.user.id);
+        console.log('Request body:', JSON.stringify(req.body, null, 2));
+        
         const sessionData = {
             ...req.body,
             userId: req.user.id
         };
 
         const session = await GameSession.create(sessionData);
+        console.log('✅ Session created:', session._id);
 
         res.status(201).json({
             success: true,
@@ -20,10 +25,17 @@ exports.createGameSession = async (req, res) => {
             data: session
         });
     } catch (error) {
+        console.error('❌ Error creating session:', error.message);
+        console.error('Error name:', error.name);
+        if (error.errors) {
+            console.error('Validation errors:', JSON.stringify(error.errors, null, 2));
+        }
+        console.error('Full error:', error);
         res.status(400).json({
             success: false,
             message: 'Error creating game session',
-            error: error.message
+            error: error.message,
+            details: error.errors || {}
         });
     }
 };

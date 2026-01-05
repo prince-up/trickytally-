@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import API_URL from '../config';
 import Navbar from '../components/Navbar';
 
 interface TrumpStats {
@@ -27,21 +28,27 @@ const Stats = () => {
   const fetchStats = async () => {
     try {
       const [playerRes, trumpRes] = await Promise.all([
-        fetch('http://localhost:5000/api/stats/player', {
+        fetch(`${API_URL}/api/stats/by-player`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch('http://localhost:5000/api/stats/game-type', {
+        fetch(`${API_URL}/api/stats/by-game`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
 
-      const playerData = await playerRes.json();
-      const trumpData = await trumpRes.json();
+      if (playerRes.ok) {
+        const playerData = await playerRes.json();
+        if (playerData.success) setPlayerStats(playerData.data || {});
+      }
 
-      if (playerData.success) setPlayerStats(playerData.data);
-      if (trumpData.success) setTrumpStats(trumpData.data);
+      if (trumpRes.ok) {
+        const trumpData = await trumpRes.json();
+        if (trumpData.success) setTrumpStats(trumpData.data || {});
+      }
     } catch (error) {
       console.error('Error fetching stats:', error);
+      setPlayerStats({});
+      setTrumpStats({});
     } finally {
       setLoading(false);
     }
@@ -106,10 +113,10 @@ const Stats = () => {
                   {Object.entries(playerStats)
                     .sort((a, b) => b[1].totalPoints - a[1].totalPoints)
                     .map(([playerName, stats]) => {
-                      const successRate = stats.totalCalls > 0 
+                      const successRate = stats.totalCalls > 0
                         ? ((stats.successfulCalls / stats.totalCalls) * 100).toFixed(1)
                         : '0.0';
-                      
+
                       return (
                         <tr key={playerName} style={styles.tableRow}>
                           <td style={styles.td}>{playerName}</td>
@@ -145,8 +152,8 @@ const Stats = () => {
               <p style={styles.insightValue}>
                 {Object.keys(playerStats).length > 0
                   ? Object.entries(playerStats).sort(
-                      (a, b) => b[1].totalPoints - a[1].totalPoints
-                    )[0][0]
+                    (a, b) => b[1].totalPoints - a[1].totalPoints
+                  )[0][0]
                   : 'N/A'}
               </p>
             </div>
@@ -157,16 +164,16 @@ const Stats = () => {
               <p style={styles.insightValue}>
                 {Object.keys(playerStats).length > 0
                   ? (() => {
-                      const best = Object.entries(playerStats).sort((a, b) => {
-                        const aRate = a[1].totalCalls > 0 ? a[1].successfulCalls / a[1].totalCalls : 0;
-                        const bRate = b[1].totalCalls > 0 ? b[1].successfulCalls / b[1].totalCalls : 0;
-                        return bRate - aRate;
-                      })[0];
-                      const rate = best[1].totalCalls > 0 
-                        ? ((best[1].successfulCalls / best[1].totalCalls) * 100).toFixed(1)
-                        : '0.0';
-                      return `${best[0]} (${rate}%)`;
-                    })()
+                    const best = Object.entries(playerStats).sort((a, b) => {
+                      const aRate = a[1].totalCalls > 0 ? a[1].successfulCalls / a[1].totalCalls : 0;
+                      const bRate = b[1].totalCalls > 0 ? b[1].successfulCalls / b[1].totalCalls : 0;
+                      return bRate - aRate;
+                    })[0];
+                    const rate = best[1].totalCalls > 0
+                      ? ((best[1].successfulCalls / best[1].totalCalls) * 100).toFixed(1)
+                      : '0.0';
+                    return `${best[0]} (${rate}%)`;
+                  })()
                   : 'N/A'}
               </p>
             </div>
@@ -177,8 +184,8 @@ const Stats = () => {
               <p style={styles.insightValue}>
                 {Object.keys(trumpStats).length > 0
                   ? Object.entries(trumpStats).sort(
-                      (a, b) => b[1].rounds - a[1].rounds
-                    )[0][0]
+                    (a, b) => b[1].rounds - a[1].rounds
+                  )[0][0]
                   : 'N/A'}
               </p>
             </div>

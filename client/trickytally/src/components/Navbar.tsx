@@ -35,7 +35,9 @@ const Navbar = () => {
         </div>
 
         <div style={styles.user}>
-          <span style={styles.userName}>{user?.name}</span>
+          <Link to="/profile" style={styles.userName}>
+            👤 {user?.name}
+          </Link>
           <button onClick={handleLogout} style={styles.logoutBtn}>
             Logout
           </button>
@@ -47,10 +49,11 @@ const Navbar = () => {
 
 const styles: { [key: string]: React.CSSProperties } = {
   nav: {
-    backgroundColor: '#1f2937',
+    background: 'linear-gradient(135deg, #1a4d2e 0%, #0f5132 100%)',
     color: 'white',
     padding: '1rem 0',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    borderBottom: '3px solid #ffd700',
   },
   container: {
     maxWidth: '1200px',
@@ -61,19 +64,26 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'center',
   },
   logo: {
-    fontSize: '1.5rem',
+    fontSize: '1.8rem',
     fontWeight: 'bold',
-    color: 'white',
+    color: '#ffd700',
     textDecoration: 'none',
+    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+    transition: 'transform 0.3s ease',
   },
   links: {
     display: 'flex',
     gap: '2rem',
   },
   link: {
-    color: '#d1d5db',
+    color: '#ffffff',
     textDecoration: 'none',
-    transition: 'color 0.2s',
+    transition: 'all 0.3s ease',
+    fontSize: '1.05rem',
+    fontWeight: '500',
+    padding: '0.5rem 1rem',
+    borderRadius: '8px',
+    border: '2px solid transparent',
   },
   user: {
     display: 'flex',
@@ -81,16 +91,27 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '1rem',
   },
   userName: {
-    color: '#d1d5db',
+    color: '#ffd700',
+    fontWeight: '600',
+    fontSize: '1.05rem',
+    textDecoration: 'none',
+    padding: '0.5rem 1rem',
+    borderRadius: '8px',
+    border: '2px solid #ffd700',
+    transition: 'all 0.3s ease',
+    backgroundColor: 'rgba(255,215,0,0.1)',
   },
   logoutBtn: {
-    backgroundColor: '#ef4444',
-    color: 'white',
-    border: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '4px',
+    background: 'linear-gradient(135deg, #dc143c 0%, #8b0000 100%)',
+    color: '#ffffff',
+    border: '2px solid #ffd700',
+    padding: '0.5rem 1.5rem',
+    borderRadius: '8px',
     cursor: 'pointer',
-    fontSize: '0.9rem',
+    fontSize: '1rem',
+    fontWeight: '600',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
   },
 };
 

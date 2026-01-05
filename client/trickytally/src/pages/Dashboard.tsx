@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import API_URL from '../config';
 import Navbar from '../components/Navbar';
 
 interface Player {
@@ -17,43 +18,88 @@ interface Session {
   players: Player[];
   totalRounds: number;
   location: string;
+  rounds?: any[];
 }
 
-interface Stats {
-  totalSessions: number;
+interface DashboardStats {
+  totalGames: number;
+  gamesWon: number;
+  gamesLost: number;
   totalRounds: number;
-  totalCalls: number;
-  totalSuccessfulCalls: number;
-  successRate: string;
-  recentSessions: Session[];
+  winRate: number;
 }
 
 const Dashboard = () => {
-  const { token } = useAuth();
-  const [stats, setStats] = useState<Stats | null>(null);
+  const { token, user } = useAuth();
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats();
+    fetchUserSessions();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchUserSessions = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/stats/summary', {
+      const response = await fetch(`${API_URL}/api/sessions`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       const data = await response.json();
       if (data.success) {
-        setStats(data.data);
+        setSessions(data.data);
+        calculateUserStats(data.data);
       }
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error('Error fetching sessions:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  const calculateUserStats = (allSessions: Session[]) => {
+    if (!user || allSessions.length === 0) {
+      setDashboardStats({
+        totalGames: 0,
+        gamesWon: 0,
+        gamesLost: 0,
+        totalRounds: 0,
+        winRate: 0,
+      });
+      return;
+    }
+
+    let gamesWon = 0;
+    let gamesLost = 0;
+    let totalRounds = 0;
+
+    allSessions.forEach(session => {
+      totalRounds += session.rounds?.length || 0;
+
+      if (session.players && session.players.length > 0) {
+        // Find winner (highest total points)
+        const winner = session.players.reduce((max, p) =>
+          p.totalPoints > max.totalPoints ? p : max, session.players[0]);
+
+        // Check if current user is the winner
+        if (winner.name === user.name || winner.name.toLowerCase().includes(user.name?.toLowerCase())) {
+          gamesWon++;
+        } else {
+          gamesLost++;
+        }
+      }
+    });
+
+    setDashboardStats({
+      totalGames: allSessions.length,
+      gamesWon,
+      gamesLost,
+      totalRounds,
+      winRate: allSessions.length > 0 ? (gamesWon / allSessions.length) * 100 : 0,
+    });
+  };
+
 
   if (loading) {
     return (
@@ -74,23 +120,23 @@ const Dashboard = () => {
 
         <div style={styles.statsGrid}>
           <div style={styles.statCard}>
-            <h3 style={styles.statLabel}>Total Sessions</h3>
-            <p style={styles.statValue}>{stats?.totalSessions || 0}</p>
+            <h3 style={styles.statLabel}>Total Games</h3>
+            <p style={styles.statValue}>{dashboardStats?.totalGames || 0}</p>
           </div>
 
           <div style={styles.statCard}>
-            <h3 style={styles.statLabel}>Total Rounds</h3>
-            <p style={styles.statValue}>{stats?.totalRounds || 0}</p>
+            <h3 style={styles.statLabel}>Games Won</h3>
+            <p style={{ ...styles.statValue, color: '#00ff00' }}>{dashboardStats?.gamesWon || 0}</p>
           </div>
 
           <div style={styles.statCard}>
-            <h3 style={styles.statLabel}>Successful Calls</h3>
-            <p style={styles.statValue}>{stats?.totalSuccessfulCalls || 0}</p>
+            <h3 style={styles.statLabel}>Games Lost</h3>
+            <p style={{ ...styles.statValue, color: '#ff4444' }}>{dashboardStats?.gamesLost || 0}</p>
           </div>
 
           <div style={styles.statCard}>
-            <h3 style={styles.statLabel}>Success Rate</h3>
-            <p style={styles.statValue}>{stats?.successRate || 0}%</p>
+            <h3 style={styles.statLabel}>Win Rate</h3>
+            <p style={styles.statValue}>{dashboardStats?.winRate ? dashboardStats.winRate.toFixed(1) : '0.0'}%</p>
           </div>
         </div>
 
@@ -102,12 +148,12 @@ const Dashboard = () => {
             </Link>
           </div>
 
-          {stats?.recentSessions && stats.recentSessions.length > 0 ? (
+          {sessions && sessions.length > 0 ? (
             <div style={styles.sessionList}>
-              {stats.recentSessions.map((session) => {
-                const winner = session.players.reduce((max, p) => 
+              {sessions.slice(0, 5).map((session) => {
+                const winner = session.players.reduce((max, p) =>
                   p.totalPoints > max.totalPoints ? p : max, session.players[0]);
-                
+
                 return (
                   <Link
                     key={session._id}

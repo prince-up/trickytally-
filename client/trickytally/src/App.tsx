@@ -8,6 +8,7 @@ import SessionList from "./pages/SessionList";
 import CreateSession from "./pages/CreateSession";
 import SessionDetail from "./pages/SessionDetail";
 import Stats from "./pages/Stats";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -58,6 +59,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Stats />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

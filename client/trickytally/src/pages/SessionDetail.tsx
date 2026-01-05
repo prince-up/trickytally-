@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import API_URL from '../config';
 import Navbar from '../components/Navbar';
 
 interface PlayerScore {
@@ -47,7 +48,7 @@ const SessionDetail = () => {
 
   const fetchSession = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/sessions/${id}`, {
+      const response = await fetch(`${API_URL}/api/sessions/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -65,7 +66,7 @@ const SessionDetail = () => {
     if (!window.confirm('Are you sure you want to delete this session?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/sessions/${id}`, {
+      const response = await fetch(`${API_URL}/api/sessions/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -104,7 +105,7 @@ const SessionDetail = () => {
     );
   }
 
-  const winner = session.players.reduce((max, p) => 
+  const winner = session.players.reduce((max, p) =>
     p.totalPoints > max.totalPoints ? p : max, session.players[0]);
 
   return (
@@ -169,10 +170,10 @@ const SessionDetail = () => {
                 {session.players
                   .sort((a, b) => b.totalPoints - a.totalPoints)
                   .map((player, index) => {
-                    const successRate = player.totalCalls > 0 
+                    const successRate = player.totalCalls > 0
                       ? ((player.successfulCalls / (session.totalRounds || 1)) * 100).toFixed(0)
                       : 0;
-                    
+
                     return (
                       <tr key={index} style={styles.tableRow}>
                         <td style={styles.td}>
@@ -226,8 +227,9 @@ const SessionDetail = () => {
                         <td
                           style={{
                             ...styles.td,
-                            color: ps.points >= 0 ? '#10b981' : '#ef4444',
+                            color: ps.points >= 0 ? '#00ff00' : '#ff4444',
                             fontWeight: 'bold',
+                            textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
                           }}
                         >
                           {ps.points >= 0 ? '+' : ''}{ps.points}
@@ -261,13 +263,25 @@ const styles: { [key: string]: React.CSSProperties } = {
     maxWidth: '1000px',
     margin: '0 auto',
     padding: '2rem',
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #0f5132 0%, #1a4d2e 50%, #0f5132 100%)',
+    backgroundImage: `
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.03) 0%, transparent 50%)
+    `,
   },
   backLink: {
-    color: '#3b82f6',
+    color: '#ffd700',
     textDecoration: 'none',
-    fontSize: '0.95rem',
+    fontSize: '1.05rem',
     marginBottom: '1rem',
     display: 'inline-block',
+    fontWeight: '600',
+    padding: '0.5rem 1rem',
+    borderRadius: '8px',
+    border: '2px solid #ffd700',
+    backgroundColor: 'rgba(255,215,0,0.1)',
+    transition: 'all 0.3s ease',
   },
   header: {
     display: 'flex',
@@ -276,24 +290,28 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '2rem',
   },
   title: {
-    fontSize: '2rem',
+    fontSize: '2.5rem',
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#ffd700',
     marginBottom: '0.5rem',
+    textShadow: '3px 3px 6px rgba(0,0,0,0.5)',
   },
   date: {
-    color: '#6b7280',
-    fontSize: '1rem',
+    color: '#b8e6d5',
+    fontSize: '1.1rem',
+    fontWeight: '500',
   },
   deleteBtn: {
-    backgroundColor: '#ef4444',
-    color: 'white',
-    padding: '0.75rem 1.5rem',
-    border: 'none',
-    borderRadius: '6px',
+    background: 'linear-gradient(135deg, #8b0000 0%, #dc143c 100%)',
+    color: '#ffffff',
+    padding: '0.875rem 1.75rem',
+    border: '2px solid #ffd700',
+    borderRadius: '10px',
     cursor: 'pointer',
-    fontSize: '0.95rem',
-    fontWeight: '500',
+    fontSize: '1rem',
+    fontWeight: '700',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    transition: 'all 0.3s ease',
   },
   grid: {
     display: 'grid',
@@ -302,33 +320,36 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '2rem',
   },
   infoCard: {
-    backgroundColor: 'white',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    backgroundColor: '#2d6a4f',
+    padding: '2rem',
+    borderRadius: '12px',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+    border: '3px solid #ffd700',
     textAlign: 'center',
   },
   infoLabel: {
-    color: '#6b7280',
-    fontSize: '0.85rem',
-    fontWeight: '500',
+    color: '#ffd700',
+    fontSize: '0.9rem',
+    fontWeight: '700',
     marginBottom: '0.5rem',
     textTransform: 'uppercase',
-    letterSpacing: '0.05em',
+    letterSpacing: '1px',
   },
   infoValue: {
-    fontSize: '1.5rem',
+    fontSize: '1.8rem',
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#ffffff',
+    textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
   },
   section: {
     marginBottom: '2rem',
   },
   sectionTitle: {
-    fontSize: '1.3rem',
+    fontSize: '1.5rem',
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#ffd700',
     marginBottom: '1rem',
+    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
   },
   summaryGrid: {
     display: 'grid',
@@ -336,83 +357,95 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '1rem',
   },
   summaryCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#2d6a4f',
     padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    borderRadius: '12px',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+    border: '2px solid rgba(255,215,0,0.3)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
   },
   summaryLabel: {
-    color: '#6b7280',
-    fontSize: '0.9rem',
+    color: '#b8e6d5',
+    fontSize: '0.95rem',
     marginBottom: '0.5rem',
+    fontWeight: '500',
   },
   summaryValue: {
     fontSize: '1.5rem',
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#ffffff',
   },
   tableContainer: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    backgroundColor: '#2d6a4f',
+    borderRadius: '12px',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+    border: '3px solid #ffd700',
+    overflow: 'auto',
+  },
   roundCard: {
-    backgroundColor: 'white',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-    marginBottom: '1rem',
+    backgroundColor: '#2d6a4f',
+    padding: '1.75rem',
+    borderRadius: '12px',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+    border: '3px solid #ffd700',
+    marginBottom: '1.5rem',
   },
   roundTitle: {
-    fontSize: '1.1rem',
+    fontSize: '1.3rem',
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#ffd700',
     marginBottom: '1rem',
+    textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
   },
   noData: {
     textAlign: 'center',
     padding: '2rem',
-    color: '#6b7280',
-    backgroundColor: 'white',
-    borderRadius: '8px',
-  },
-    overflow: 'auto',
+    color: '#ffd700',
+    backgroundColor: '#2d6a4f',
+    borderRadius: '12px',
+    border: '2px solid #ffd700',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
   },
   tableHeader: {
-    backgroundColor: '#f9fafb',
+    background: 'linear-gradient(135deg, #8b0000 0%, #dc143c 100%)',
   },
   th: {
-    padding: '1rem',
+    padding: '1.2rem',
     textAlign: 'left',
-    fontWeight: '600',
-    color: '#374151',
-    borderBottom: '2px solid #e5e7eb',
+    fontWeight: '700',
+    color: '#ffd700',
+    borderBottom: '3px solid #ffd700',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
   },
   tableRow: {
-    borderBottom: '1px solid #e5e7eb',
+    borderBottom: '2px solid rgba(255,215,0,0.2)',
+    backgroundColor: '#52b788',
   },
   td: {
     padding: '1rem',
-    color: '#1f2937',
+    color: '#ffffff',
+    fontWeight: '500',
   },
   winnerBadge: {
     marginRight: '0.5rem',
   },
   notesCard: {
-    backgroundColor: 'white',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    backgroundColor: '#2d6a4f',
+    padding: '2rem',
+    borderRadius: '12px',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+    border: '3px solid #ffd700',
   },
   notesText: {
-    color: '#374151',
-    lineHeight: '1.6',
+    color: '#ffffff',
+    lineHeight: '1.8',
+    fontSize: '1.05rem',
   },
 };
 
