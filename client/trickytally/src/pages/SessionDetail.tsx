@@ -130,7 +130,7 @@ const SessionDetail = () => {
               })}
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div style={styles.actionButtons}>
             <button
               type="button"
               onClick={() => setShowWinnerModal(true)}
@@ -309,7 +309,15 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    gap: '1.5rem',
     marginBottom: '2rem',
+  },
+  actionButtons: {
+    display: 'flex',
+    gap: '1rem',
+    flexWrap: 'wrap',
+    marginTop: '0.5rem',
   },
   title: {
     fontSize: '2.5rem',
