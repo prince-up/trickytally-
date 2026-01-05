@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API_URL from '../config';
 import Navbar from '../components/Navbar';
+import WinnerModal from '../components/WinnerModal';
 
 interface PlayerScore {
   playerName: string;
@@ -41,6 +42,7 @@ const SessionDetail = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showWinnerModal, setShowWinnerModal] = useState(false);
 
   useEffect(() => {
     fetchSession();
@@ -128,9 +130,18 @@ const SessionDetail = () => {
               })}
             </p>
           </div>
-          <button onClick={handleDelete} style={styles.deleteBtn}>
-            Delete Session
-          </button>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button
+              type="button"
+              onClick={() => setShowWinnerModal(true)}
+              style={styles.winnerBtn}
+            >
+              🏆 Declare Winner
+            </button>
+            <button onClick={handleDelete} style={styles.deleteBtn}>
+              Delete Session
+            </button>
+          </div>
         </div>
 
         <div style={styles.grid}>
@@ -188,7 +199,7 @@ const SessionDetail = () => {
                             fontWeight: 'bold',
                           }}
                         >
-                          {player.totalPoints}
+                          {player.totalPoints.toFixed(1)}
                         </td>
                         <td style={styles.td}>{player.totalCalls}</td>
                         <td style={styles.td}>{player.totalTricksWon}</td>
@@ -232,7 +243,7 @@ const SessionDetail = () => {
                             textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
                           }}
                         >
-                          {ps.points >= 0 ? '+' : ''}{ps.points}
+                          {ps.points >= 0 ? '+' : ''}{ps.points.toFixed(1)}
                         </td>
                       </tr>
                     ))}
@@ -252,6 +263,15 @@ const SessionDetail = () => {
               <p style={styles.notesText}>{session.notes}</p>
             </div>
           </div>
+        )}
+
+        {showWinnerModal && (
+          <WinnerModal
+            winnerName={winner.name}
+            winnerScore={winner.totalPoints}
+            allPlayers={session.players}
+            onClose={() => setShowWinnerModal(false)}
+          />
         )}
       </div>
     </>
@@ -434,6 +454,19 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   winnerBadge: {
     marginRight: '0.5rem',
+  },
+  winnerBtn: {
+    background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
+    color: '#000000',
+    padding: '0.875rem 1.75rem',
+    border: '3px solid #ff8c00',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    fontWeight: '700',
+    boxShadow: '0 4px 12px rgba(255,215,0,0.5)',
+    transition: 'all 0.3s ease',
+    whiteSpace: 'nowrap',
   },
   notesCard: {
     backgroundColor: '#2d6a4f',

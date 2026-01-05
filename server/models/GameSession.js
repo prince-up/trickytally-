@@ -96,10 +96,11 @@ gameSessionSchema.pre('save', async function () {
     this.rounds.forEach(round => {
         round.playerScores.forEach(player => {
             // Call Break scoring: 
-            // If tricks >= call: points = call
+            // If tricks >= call: points = tricksWon + (extraTricks × 0.1)
             // If tricks < call: points = -(call)
             if (player.tricksWon >= player.call) {
-                player.points = player.call;
+                const extraTricks = player.tricksWon - player.call;
+                player.points = player.tricksWon + (extraTricks * 0.1);
             } else {
                 player.points = -Math.abs(player.call);
             }

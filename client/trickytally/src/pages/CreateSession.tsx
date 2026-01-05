@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API_URL from '../config';
 import Navbar from '../components/Navbar';
+import WinnerModal from '../components/WinnerModal';
 
 interface PlayerScore {
   playerName: string;
@@ -47,6 +48,7 @@ const CreateSession = () => {
   const [playerNames, setPlayerNames] = useState<string[]>(savedData?.playerNames || ['', '', '', '']);
   const [rounds, setRounds] = useState<Round[]>(savedData?.rounds || []);
   const [showPreview, setShowPreview] = useState(false);
+  const [showWinnerModal, setShowWinnerModal] = useState(false);
 
   // Auto-save to localStorage whenever data changes
   useEffect(() => {
@@ -60,7 +62,14 @@ const CreateSession = () => {
   }, [formData, playerNames, rounds]);
 
   const calculatePoints = (call: number, tricksWon: number): number => {
-    return tricksWon >= call ? call : -call;
+    if (tricksWon >= call) {
+      // Met or exceeded call: base points + 0.1 per extra trick
+      const extraTricks = tricksWon - call;
+      return call + (extraTricks * 0.1);
+    } else {
+      // Failed call: negative points
+      return -call;
+    }
   };
 
   const calculateTotalPoints = () => {
@@ -375,7 +384,7 @@ const CreateSession = () => {
                                 fontWeight: 'bold',
                                 textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
                               }}>
-                                {points >= 0 ? '+' : ''}{points}
+                                {points >= 0 ? '+' : ''}{points.toFixed(1)}
                               </div>
                             </td>
                           </tr>
@@ -433,7 +442,7 @@ const CreateSession = () => {
                               color: points >= 0 ? '#00ff00' : '#ff4444',
                               textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
                             }}>
-                              {points >= 0 ? '+' : ''}{points}
+                              {points >= 0 ? '+' : ''}{points.toFixed(1)}
                             </td>
                           </tr>
                         ))}
@@ -444,10 +453,39 @@ const CreateSession = () => {
             </div>
           )}
 
+          {rounds.length >= 4 && (
+            <button
+              type="button"
+              onClick={() => setShowWinnerModal(true)}
+              style={styles.declareWinnerBtn}
+            >
+              🏆 Declare Winner 🏆
+            </button>
+          )}
+
           <button type="submit" style={styles.submitBtn} disabled={loading}>
             {loading ? 'Creating...' : '✓ Save Session & View Results'}
           </button>
         </form>
+
+        {showWinnerModal && (() => {
+          const totals = calculateTotalPoints();
+          const playersArray = Object.entries(totals).map(([name, points]) => ({
+            name,
+            totalPoints: points
+          }));
+          const winner = playersArray.reduce((max, p) =>
+            p.totalPoints > max.totalPoints ? p : max, playersArray[0]
+          );
+          return (
+            <WinnerModal
+              winnerName={winner.name}
+              winnerScore={winner.totalPoints}
+              allPlayers={playersArray}
+              onClose={() => setShowWinnerModal(false)}
+            />
+          );
+        })()}
       </div>
     </>
   );
@@ -829,6 +867,22 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
     transition: 'all 0.3s ease',
     whiteSpace: 'nowrap',
+  },
+  declareWinnerBtn: {
+    width: '100%',
+    background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
+    color: '#000000',
+    padding: '1.25rem',
+    border: '3px solid #ff8c00',
+    borderRadius: '12px',
+    fontSize: '1.3rem',
+    fontWeight: '700',
+    cursor: 'pointer',
+    boxShadow: '0 8px 25px rgba(255,215,0,0.5)',
+    transition: 'all 0.3s ease',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    marginBottom: '1rem',
   },
 };
 
