@@ -554,7 +554,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: '3px solid #ffffff',
     boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
     transition: 'transform 0.3s ease',
-    overflowX: 'auto',
   },
   roundHeader: {
     display: 'flex',
@@ -628,6 +627,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '0.5rem 0.25rem',
     textAlign: 'center',
     borderBottom: '2px solid rgba(255,215,0,0.2)',
+    backgroundColor: '#52b788',
+    verticalAlign: 'middle',
   },
   playerBadge: {
     backgroundColor: '#6366f1',
