@@ -548,12 +548,13 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   roundCard: {
     background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-    padding: '2rem',
+    padding: '1.5rem',
     borderRadius: '16px',
     marginBottom: '1.5rem',
     border: '3px solid #ffffff',
     boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
     transition: 'transform 0.3s ease',
+    overflowX: 'auto',
   },
   roundHeader: {
     display: 'flex',
@@ -586,6 +587,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   scoreTable: {
     width: '100%',
+    minWidth: '500px',
     borderCollapse: 'separate',
     borderSpacing: 0,
     backgroundColor: '#2d6a4f',
@@ -659,11 +661,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '0.5rem',
   },
   scoreInputModern: {
-    width: '100px',
-    padding: '0.75rem',
+    width: '80px',
+    padding: '0.6rem',
     border: '3px solid #ffd700',
     borderRadius: '10px',
-    fontSize: '1.2rem',
+    fontSize: '1rem',
     fontWeight: '700',
     textAlign: 'center',
     transition: 'all 0.3s ease',
