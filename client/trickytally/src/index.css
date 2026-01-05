@@ -103,14 +103,6 @@ button:focus-visible {
     /* Prevents zoom on iOS */
   }
 
-  /* Make tables responsive */
-  table {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    max-width: 100%;
-  }
-
   /* Prevent text overflow */
   h1,
   h2,
