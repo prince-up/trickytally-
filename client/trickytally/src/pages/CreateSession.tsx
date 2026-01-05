@@ -306,17 +306,17 @@ const CreateSession = () => {
                       <th style={styles.tableTh}>Player</th>
                       <th style={styles.tableTh}>
                         <div style={styles.headerWithIcon}>
-                          🎯 Call (Guess)
+                          🎯 Call
                         </div>
                       </th>
                       <th style={styles.tableTh}>
                         <div style={styles.headerWithIcon}>
-                          ✓ Tricks Won (Actual)
+                          ✓ Won
                         </div>
                       </th>
                       <th style={styles.tableTh}>
                         <div style={styles.headerWithIcon}>
-                          💰 Points
+                          💰 Pts
                         </div>
                       </th>
                     </tr>
@@ -587,7 +587,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   scoreTable: {
     width: '100%',
-    minWidth: '500px',
     borderCollapse: 'separate',
     borderSpacing: 0,
     backgroundColor: '#2d6a4f',
@@ -597,14 +596,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: '3px solid #ffd700',
   },
   tableTh: {
-    padding: '0.8rem 0.5rem',
+    padding: '0.6rem 0.25rem',
     textAlign: 'center',
     background: 'linear-gradient(135deg, #8b0000 0%, #dc143c 100%)',
     fontWeight: '700',
     color: '#ffd700',
-    fontSize: 'clamp(0.75rem, 2vw, 1rem)',
+    fontSize: 'clamp(0.7rem, 2vw, 0.9rem)',
     textTransform: 'uppercase',
-    letterSpacing: '0.5px',
+    letterSpacing: '0.3px',
     textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
     borderBottom: '3px solid #ffd700',
     whiteSpace: 'nowrap',
@@ -613,8 +612,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '0.25rem',
-    fontSize: 'clamp(0.7rem, 2vw, 0.9rem)',
+    gap: '0.2rem',
+    fontSize: 'clamp(0.65rem, 1.8vw, 0.85rem)',
   },
   tableRow: {
     transition: 'background-color 0.2s ease',
@@ -626,11 +625,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     verticalAlign: 'middle',
   },
   tableTd: {
-    padding: '1rem',
-    borderBottom: '2px solid rgba(255,215,0,0.2)',
+    padding: '0.5rem 0.25rem',
     textAlign: 'center',
-    backgroundColor: '#52b788',
-    verticalAlign: 'middle',
+    borderBottom: '2px solid rgba(255,215,0,0.2)',
   },
   playerBadge: {
     backgroundColor: '#6366f1',
@@ -642,18 +639,18 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: '0 2px 8px rgba(99,102,241,0.3)',
   },
   playerNameInput: {
-    width: '100%',
-    padding: '0.875rem',
+    width: '80px',
+    padding: '0.5rem',
     border: '3px solid #ffd700',
     borderRadius: '10px',
-    fontSize: '1.1rem',
+    fontSize: '0.85rem',
     fontWeight: '700',
     textAlign: 'center',
-    transition: 'all 0.3s ease',
-    outline: 'none',
     backgroundColor: '#ffffff',
     color: '#000000 !important',
     boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    outline: 'none',
+    transition: 'all 0.3s ease',
     WebkitTextFillColor: '#000000',
   },
   inputWrapper: {
@@ -663,11 +660,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '0.5rem',
   },
   scoreInputModern: {
-    width: '80px',
-    padding: '0.6rem',
+    width: '60px',
+    padding: '0.5rem',
     border: '3px solid #ffd700',
     borderRadius: '10px',
-    fontSize: '1rem',
+    fontSize: '0.9rem',
     fontWeight: '700',
     textAlign: 'center',
     transition: 'all 0.3s ease',
