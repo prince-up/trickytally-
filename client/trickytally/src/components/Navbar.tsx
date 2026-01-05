@@ -30,7 +30,7 @@ const Navbar = () => {
             New Session
           </Link>
           <Link to="/stats" style={styles.link}>
-            Stats
+            Prince's Guide
           </Link>
         </div>
 
