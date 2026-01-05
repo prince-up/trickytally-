@@ -189,7 +189,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   container: {
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '2rem',
+    padding: '1rem',
     background: 'linear-gradient(135deg, #0f5132 0%, #1a4d2e 50%, #0f5132 100%)',
     minHeight: '100vh',
     backgroundImage: `
@@ -198,19 +198,19 @@ const styles: { [key: string]: React.CSSProperties } = {
     `,
   },
   title: {
-    fontSize: '2.5rem',
+    fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
     fontWeight: 'bold',
-    marginBottom: '2rem',
+    marginBottom: '1.5rem',
     color: '#ffd700',
     textAlign: 'center',
     textShadow: '3px 3px 6px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.3)',
-    letterSpacing: '2px',
+    letterSpacing: '1px',
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '1.5rem',
-    marginBottom: '3rem',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+    gap: '1rem',
+    marginBottom: '2rem',
   },
   statCard: {
     backgroundColor: '#2d6a4f',

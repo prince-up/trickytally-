@@ -262,7 +262,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   container: {
     maxWidth: '1000px',
     margin: '0 auto',
-    padding: '2rem',
+    padding: '1rem',
     minHeight: '100vh',
     background: 'linear-gradient(135deg, #0f5132 0%, #1a4d2e 50%, #0f5132 100%)',
     backgroundImage: `

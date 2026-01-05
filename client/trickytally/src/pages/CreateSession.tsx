@@ -453,7 +453,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   container: {
     maxWidth: '1000px',
     margin: '0 auto',
-    padding: '2rem',
+    padding: '1rem',
     background: 'linear-gradient(135deg, #0f5132 0%, #1a4d2e 50%, #0f5132 100%)',
     minHeight: '100vh',
     backgroundImage: `
@@ -471,16 +471,16 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexWrap: 'wrap',
   },
   title: {
-    fontSize: '2.8rem',
+    fontSize: 'clamp(1.5rem, 5vw, 2.8rem)',
     fontWeight: 'bold',
     margin: 0,
     color: '#ffd700',
     textShadow: '3px 3px 6px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.3)',
-    letterSpacing: '2px',
+    letterSpacing: '1px',
   },
   form: {
     backgroundColor: '#1e5128',
-    padding: '2.5rem',
+    padding: '1.5rem',
     borderRadius: '20px',
     boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 3px rgba(255,255,255,0.1)',
     border: '3px solid #ffd700',
@@ -539,8 +539,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   playerNamesGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '1rem',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+    gap: '0.75rem',
   },
   roundsSection: {
     marginTop: '2rem',

@@ -125,7 +125,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   container: {
     minHeight: '100vh',
     background: 'linear-gradient(135deg, #0f5132 0%, #1a4d2e 50%, #0f5132 100%)',
-    padding: '2rem',
+    padding: '1rem',
     backgroundImage: `
       radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 0%, transparent 50%),
       radial-gradient(circle at 80% 70%, rgba(255,255,255,0.03) 0%, transparent 50%)
@@ -136,7 +136,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 auto',
     backgroundColor: '#2d6a4f',
     borderRadius: '20px',
-    padding: '3rem',
+    padding: '2rem',
     boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
     border: '3px solid #ffd700',
   },

@@ -37,9 +37,9 @@ const Login = () => {
       <div style={styles.card}>
         <h1 style={styles.title}>🃏 TrickTally</h1>
         <h2 style={styles.subtitle}>Login</h2>
-        
+
         {error && <div style={styles.error}>{error}</div>}
-        
+
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.formGroup}>
             <label style={styles.label}>Email</label>
@@ -53,7 +53,7 @@ const Login = () => {
               required
             />
           </div>
-          
+
           <div style={styles.formGroup}>
             <label style={styles.label}>Password</label>
             <input
@@ -66,12 +66,12 @@ const Login = () => {
               required
             />
           </div>
-          
+
           <button type="submit" style={styles.button} disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-        
+
         <p style={styles.footer}>
           Don't have an account?{" "}
           <Link to="/signup" style={styles.link}>
@@ -98,6 +98,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
     width: "100%",
     maxWidth: "400px",
+    margin: "1rem",
   },
   title: {
     textAlign: "center",

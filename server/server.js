@@ -11,7 +11,15 @@ const statsRoutes = require("./routes/statsRoutes");
 const app = express(); // ✅ app defined FIRST
 
 // MIDDLEWARE
-app.use(cors());
+// CORS - Allow requests from frontend
+app.use(cors({
+  origin: [
+    'https://trickytally.vercel.app',  // Replace with your actual Vercel URL
+    'http://localhost:5173',
+    'http://localhost:5174'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // ROUTES
