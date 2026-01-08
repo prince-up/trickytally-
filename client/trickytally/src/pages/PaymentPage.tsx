@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import API_URL from '../config';
+
 import Navbar from '../components/Navbar';
 
 const Tiers = [
@@ -12,7 +12,7 @@ const Tiers = [
 ];
 
 const PaymentPage = () => {
-    const { token } = useAuth();
+    const { } = useAuth();
     const navigate = useNavigate();
     const [selectedTier, setSelectedTier] = useState(Tiers[0]);
     const [loading, setLoading] = useState(false);
