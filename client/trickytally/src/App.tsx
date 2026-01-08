@@ -9,6 +9,8 @@ import CreateSession from "./pages/CreateSession";
 import SessionDetail from "./pages/SessionDetail";
 import Stats from "./pages/Stats";
 import Profile from "./pages/Profile";
+import PaymentPage from "./pages/PaymentPage";
+
 
 function App() {
   return (
@@ -17,7 +19,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          
+
           <Route
             path="/dashboard"
             element={
@@ -26,7 +28,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           <Route
             path="/sessions"
             element={
@@ -35,7 +37,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           <Route
             path="/sessions/:id"
             element={
@@ -44,16 +46,26 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
+          <Route
+            path="/payment"
+            element={
+              <ProtectedRoute>
+                <PaymentPage />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/create-session"
+
             element={
               <ProtectedRoute>
                 <CreateSession />
               </ProtectedRoute>
             }
           />
-          
+
           <Route
             path="/stats"
             element={
@@ -62,7 +74,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           <Route
             path="/profile"
             element={
@@ -71,7 +83,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>

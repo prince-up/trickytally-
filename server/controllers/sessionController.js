@@ -10,7 +10,7 @@ exports.createGameSession = async (req, res) => {
         console.log('📝 Creating game session...');
         console.log('User ID:', req.user.id);
         console.log('Request body:', JSON.stringify(req.body, null, 2));
-        
+
         const sessionData = {
             ...req.body,
             userId: req.user.id
@@ -82,7 +82,7 @@ exports.getUserGameHistory = async (req, res) => {
     try {
         const sessions = await GameSession.find({ userId: req.user.id })
             .sort({ sessionDate: -1 });
-        
+
         res.status(200).json({
             success: true,
             count: sessions.length,
@@ -433,7 +433,7 @@ exports.getDashboardStats = async (req, res) => {
                 Clubs: session.rounds.filter(r => r.trump === 'Clubs').length
             },
             playerStats: session.playerTotals.map(player => {
-                const playerRounds = session.rounds.map(round => 
+                const playerRounds = session.rounds.map(round =>
                     round.playerScores.find(ps => ps.playerName === player.playerName)
                 ).filter(Boolean);
 
@@ -445,7 +445,7 @@ exports.getDashboardStats = async (req, res) => {
                     totalPoints: player.totalPoints,
                     successfulCalls,
                     failedCalls,
-                    successRate: playerRounds.length > 0 
+                    successRate: playerRounds.length > 0
                         ? ((successfulCalls / playerRounds.length) * 100).toFixed(1) + '%'
                         : '0%'
                 };
@@ -547,6 +547,65 @@ exports.deleteSession = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error deleting session',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Withdraw winner payout (93% of total pool)
+// @route   POST /api/sessions/:id/withdraw
+// @access  Private
+exports.withdrawPayout = async (req, res) => {
+    try {
+        const session = await GameSession.findById(req.params.id);
+
+        if (!session) {
+            return res.status(404).json({
+                success: false,
+                message: 'Session not found'
+            });
+        }
+
+        if (session.userId.toString() !== req.user.id) {
+            return res.status(401).json({
+                success: false,
+                message: 'Not authorized'
+            });
+        }
+
+        if (!session.isBiddingGame) {
+            return res.status(400).json({
+                success: false,
+                message: 'Not a bidding game'
+            });
+        }
+
+        if (session.winnerWithdrawn) {
+            return res.status(400).json({
+                success: false,
+                message: 'Payout already withdrawn'
+            });
+        }
+
+        // Mark as withdrawn
+        session.winnerWithdrawn = true;
+        session.paymentStatus = 'Withdrawn';
+        await session.save();
+
+        const payoutAmount = session.totalPool * 0.93;
+
+        res.status(200).json({
+            success: true,
+            message: 'Payout processed successfully',
+            data: {
+                payoutAmount: payoutAmount.toFixed(2),
+                totalPool: session.totalPool
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error processing payout',
             error: error.message
         });
     }

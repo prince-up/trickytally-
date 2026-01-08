@@ -49,6 +49,11 @@ const CreateSession = () => {
   const [rounds, setRounds] = useState<Round[]>(savedData?.rounds || []);
   const [showPreview, setShowPreview] = useState(false);
   const [showWinnerModal, setShowWinnerModal] = useState(false);
+  const [isBiddingMode, setIsBiddingMode] = useState(savedData?.isBiddingMode || false);
+  const [isBiddingPaid, setIsBiddingPaid] = useState(savedData?.isBiddingPaid || false);
+  const [bidTier, setBidTier] = useState(savedData?.bidTier || null);
+
+
 
   // Auto-save to localStorage whenever data changes
   useEffect(() => {
@@ -56,10 +61,14 @@ const CreateSession = () => {
       formData,
       playerNames,
       rounds,
+      isBiddingMode,
+      isBiddingPaid,
+      bidTier,
       lastSaved: new Date().toISOString(),
     };
     localStorage.setItem('callbreak_draft_session', JSON.stringify(dataToSave));
-  }, [formData, playerNames, rounds]);
+  }, [formData, playerNames, rounds, isBiddingMode, isBiddingPaid, bidTier]);
+
 
   const calculatePoints = (call: number, tricksWon: number): number => {
     if (tricksWon >= call) {
@@ -149,7 +158,11 @@ const CreateSession = () => {
       setPlayerNames(['', '', '', '']);
       setRounds([]);
       setShowPreview(false);
+      setIsBiddingMode(false);
+      setIsBiddingPaid(false);
+      setBidTier(null);
       localStorage.removeItem('callbreak_draft_session');
+
       alert('All data cleared! You can start fresh.');
     }
   };
@@ -163,21 +176,32 @@ const CreateSession = () => {
       return;
     }
 
-    if (rounds.length === 0) {
+    if (!isBiddingMode && rounds.length === 0) {
       alert('Please add at least one round');
       return;
     }
 
-    setLoading(true);
+    if (isBiddingMode && !isBiddingPaid) {
+      if (validPlayers.length !== 4) {
+        alert('Bidding mode requires exactly 4 players.');
+        return;
+      }
+      navigate('/payment');
+      return;
+    }
 
+    setLoading(true);
     try {
       const sessionData = {
         ...formData,
         players: validPlayers.map(name => ({ name, totalPoints: 0 })),
         rounds: rounds,
+        isBiddingGame: isBiddingMode,
+        bidTier: bidTier?.id,
+        bidAmount: bidTier?.amount,
+        totalPool: isBiddingMode ? (bidTier?.amount * 4) : 0,
+        paymentStatus: isBiddingPaid ? 'Paid' : 'Unpaid'
       };
-
-      console.log('Sending session data:', JSON.stringify(sessionData, null, 2));
 
       const response = await fetch(`${API_URL}/api/sessions`, {
         method: 'POST',
@@ -189,30 +213,16 @@ const CreateSession = () => {
       });
 
       const data = await response.json();
-
       if (data.success) {
-        // Clear saved draft after successful save
         localStorage.removeItem('callbreak_draft_session');
-
-        // Reset all form data for next game
-        setFormData({
-          sessionDate: new Date().toISOString().split('T')[0],
-          location: '',
-          notes: '',
-        });
-        setPlayerNames(['', '', '', '']);
-        setRounds([]);
-        setShowPreview(false);
-
-        // Navigate to dashboard
+        alert('Session created successfully!');
         navigate('/dashboard');
       } else {
-        console.error('Server error:', data);
-        alert(`Failed to create session: ${data.message}\n${data.error || ''}`);
+        alert(data.message || 'Error creating session');
       }
     } catch (error) {
-      console.error('Error creating session:', error);
-      alert('Error creating session');
+      console.error('Error:', error);
+      alert('Error connecting to server');
     } finally {
       setLoading(false);
     }
@@ -223,7 +233,9 @@ const CreateSession = () => {
       <Navbar />
       <div style={styles.container}>
         <div style={styles.headerSection}>
-          <h1 style={styles.title}>Create New Call Break Session</h1>
+          <h1 style={styles.title}>
+            <span style={{ color: '#dc143c' }}>♥️</span> Create New Call Break Session <span style={{ color: '#dc143c' }}>♦️</span>
+          </h1>
           <button
             type="button"
             onClick={clearAllData}
@@ -261,141 +273,205 @@ const CreateSession = () => {
             </div>
           </div>
 
-          <div style={styles.playersSection}>
-            <h2 style={styles.subtitle}>Players (4 players recommended)</h2>
-            <div style={styles.playerNamesGrid}>
-              {playerNames.map((name, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  placeholder={`Player ${index + 1}`}
-                  value={name}
-                  onChange={(e) => handlePlayerNameChange(index, e.target.value)}
-                  style={styles.playerInput}
-                />
-              ))}
-            </div>
-          </div>
+          <div style={styles.biddingSection}>
+            <div style={styles.biddingHeader}>
+              <h2 style={styles.subtitle}>Bidding System</h2>
+              <div
+                style={{
+                  ...styles.switch,
+                  opacity: isBiddingPaid ? 0.6 : 1,
+                  cursor: isBiddingPaid ? 'not-allowed' : 'pointer'
+                }}
+                onClick={() => !isBiddingPaid && setIsBiddingMode(!isBiddingMode)}
+              >
 
-          <div style={styles.roundsSection}>
-            <div style={styles.playerHeader}>
-              <h2 style={styles.subtitle}>Rounds</h2>
-              <button type="button" onClick={addRound} style={styles.addBtn}>
-                + Add Round
-              </button>
-            </div>
-
-            {rounds.map((round, rIndex) => (
-              <div key={rIndex} style={styles.roundCard}>
-                <div style={styles.roundHeader}>
-                  <h3 style={styles.roundTitle}>Round {round.roundNumber}</h3>
-                  <div style={styles.roundControls}>
-                    <select
-                      value={round.trump}
-                      onChange={(e) => updateRound(rIndex, 'trump', e.target.value)}
-                      style={styles.trumpSelect}
-                    >
-                      <option value="Spades">♠️ Spades</option>
-                      <option value="Hearts">♥️ Hearts</option>
-                      <option value="Diamonds">♦️ Diamonds</option>
-                      <option value="Clubs">♣️ Clubs</option>
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => removeRound(rIndex)}
-                      style={styles.removeBtn}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-
-
-                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                  <table style={styles.scoreTable}>
-                    <thead>
-                      <tr>
-                        <th style={styles.tableTh}>Player</th>
-                        <th style={styles.tableTh}>
-                          <div style={styles.headerWithIcon}>
-                            🎯 Call
-                          </div>
-                        </th>
-                        <th style={styles.tableTh}>
-                          <div style={styles.headerWithIcon}>
-                            ✓ Won
-                          </div>
-                        </th>
-                        <th style={styles.tableTh}>
-                          <div style={styles.headerWithIcon}>
-                            💰 Pts
-                          </div>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {round.playerScores.map((ps, pIndex) => {
-                        const points = calculatePoints(ps.call, ps.tricksWon);
-                        return (
-                          <tr key={pIndex} style={styles.tableRow}>
-                            <td style={styles.tableTdPlayer}>
-                              <input
-                                type="text"
-                                value={ps.playerName}
-                                onChange={(e) => {
-                                  const newRounds = [...rounds];
-                                  newRounds[rIndex].playerScores[pIndex].playerName = e.target.value;
-                                  setRounds(newRounds);
-                                }}
-                                style={styles.playerNameInput}
-                                placeholder={`Player ${pIndex + 1}`}
-                              />
-                            </td>
-                            <td style={styles.tableTd}>
-                              <input
-                                type="number"
-                                value={ps.call === 0 ? '' : ps.call}
-                                onChange={(e) =>
-                                  updatePlayerScore(rIndex, pIndex, 'call', parseInt(e.target.value) || 0)
-                                }
-                                style={styles.scoreInputModern}
-                                min="0"
-                                max="13"
-                              />
-                            </td>
-                            <td style={styles.tableTd}>
-                              <input
-                                type="number"
-                                value={ps.tricksWon === 0 ? '' : ps.tricksWon}
-                                onChange={(e) =>
-                                  updatePlayerScore(rIndex, pIndex, 'tricksWon', parseInt(e.target.value) || 0)
-                                }
-                                style={styles.scoreInputModern}
-                                min="0"
-                                max="13"
-                              />
-                            </td>
-                            <td style={styles.tableTd}>
-                              <div style={{
-                                ...styles.pointsBadge,
-                                backgroundColor: points >= 0 ? 'rgba(0,255,0,0.15)' : 'rgba(255,0,0,0.15)',
-                                color: points >= 0 ? '#00ff00' : '#ff4444',
-                                border: points >= 0 ? '2px solid #00ff00' : '2px solid #ff4444',
-                                fontWeight: 'bold',
-                                textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                              }}>
-                                {points >= 0 ? '+' : ''}{points.toFixed(1)}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                <div style={{
+                  ...styles.slider,
+                  ...(isBiddingMode ? styles.sliderActive : {})
+                }}>
+                  <div style={{
+                    ...styles.sliderCircle,
+                    ...(isBiddingMode ? styles.sliderCircleActive : {})
+                  }}></div>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {isBiddingMode && (
+              <p style={styles.biddingInfo}>
+                {playerNames.filter(n => n.trim()).length !== 4
+                  ? "⚠ Bidding is only available for 4 players."
+                  : "✓ 4 players detected. You can place bids in the next step."}
+              </p>
+            )}
+
+            {isBiddingMode && isBiddingPaid && (
+              <div style={styles.paymentBadge}>
+                💰 Payment Confirmed: {bidTier?.name} (₹{bidTier?.amount})
+              </div>
+            )}
           </div>
+
+
+          <div style={styles.section}>
+            <h2 style={styles.subtitle}>Players (4 players recommended)</h2>
+            <div style={{
+              ...styles.playersGrid,
+              opacity: isBiddingPaid ? 0.7 : 1,
+              pointerEvents: isBiddingPaid ? 'none' : 'auto'
+            }}>
+              {playerNames.map((name, index) => (
+                <div key={index} style={{ position: 'relative' }}>
+                  <span style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#dc143c', // Red icon
+                    fontSize: '1.2rem',
+                    pointerEvents: 'none',
+                    zIndex: 2,
+                    opacity: 0.9
+                  }}>👤</span>
+
+                  <input
+                    style={{
+                      ...styles.playerInput,
+                      ...(name ? { border: '2px solid #ffd700', backgroundColor: 'rgba(255, 215, 0, 0.05)' } : {})
+                    }}
+                    value={name}
+                    onChange={(e) => handlePlayerNameChange(index, e.target.value)}
+                    placeholder={`Enter Player ${index + 1}`}
+                    disabled={isBiddingPaid}
+                  />
+                </div>
+              ))}
+
+            </div>
+          </div>
+
+          {(!isBiddingMode || isBiddingPaid) && (
+            <div style={styles.section}>
+              <div style={styles.sectionHeader}>
+                <h2 style={styles.subtitle}>Rounds</h2>
+                <button type="button" onClick={addRound} style={styles.addRoundBtn}>
+                  + Add Round
+                </button>
+              </div>
+
+              {rounds.map((round, rIndex) => (
+                <div key={rIndex} style={styles.roundCard}>
+                  <div style={styles.roundHeader}>
+                    <h3 style={styles.roundTitle}>Round {round.roundNumber}</h3>
+                    <div style={styles.roundControls}>
+                      <select
+                        value={round.trump}
+                        onChange={(e) => updateRound(rIndex, 'trump', e.target.value)}
+                        style={styles.trumpSelect}
+                      >
+                        <option value="Spades">♠️ Spades</option>
+                        <option value="Hearts">♥️ Hearts</option>
+                        <option value="Diamonds">♦️ Diamonds</option>
+                        <option value="Clubs">♣️ Clubs</option>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => removeRound(rIndex)}
+                        style={styles.removeBtn}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+
+
+                  <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                    <table style={styles.scoreTable}>
+                      <thead>
+                        <tr>
+                          <th style={styles.tableTh}>Player</th>
+                          <th style={styles.tableTh}>
+                            <div style={styles.headerWithIcon}>
+                              🎯 Call
+                            </div>
+                          </th>
+                          <th style={styles.tableTh}>
+                            <div style={styles.headerWithIcon}>
+                              ✓ Won
+                            </div>
+                          </th>
+                          <th style={styles.tableTh}>
+                            <div style={styles.headerWithIcon}>
+                              💰 Pts
+                            </div>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {round.playerScores.map((ps, pIndex) => {
+                          const points = calculatePoints(ps.call, ps.tricksWon);
+                          return (
+                            <tr key={pIndex} style={styles.tableRow}>
+                              <td style={styles.tableTdPlayer}>
+                                <input
+                                  type="text"
+                                  value={ps.playerName}
+                                  onChange={(e) => {
+                                    const newRounds = [...rounds];
+                                    newRounds[rIndex].playerScores[pIndex].playerName = e.target.value;
+                                    setRounds(newRounds);
+                                  }}
+                                  style={styles.playerNameInput}
+                                  placeholder={`Player ${pIndex + 1}`}
+                                />
+                              </td>
+                              <td style={styles.tableTd}>
+                                <input
+                                  type="number"
+                                  value={ps.call === 0 ? '' : ps.call}
+                                  onChange={(e) =>
+                                    updatePlayerScore(rIndex, pIndex, 'call', parseInt(e.target.value) || 0)
+                                  }
+                                  style={styles.scoreInputModern}
+                                  min="0"
+                                  max="13"
+                                />
+                              </td>
+                              <td style={styles.tableTd}>
+                                <input
+                                  type="number"
+                                  value={ps.tricksWon === 0 ? '' : ps.tricksWon}
+                                  onChange={(e) =>
+                                    updatePlayerScore(rIndex, pIndex, 'tricksWon', parseInt(e.target.value) || 0)
+                                  }
+                                  style={styles.scoreInputModern}
+                                  min="0"
+                                  max="13"
+                                />
+                              </td>
+                              <td style={styles.tableTd}>
+                                <div style={{
+                                  ...styles.pointsBadge,
+                                  backgroundColor: points >= 0 ? 'rgba(0,255,0,0.15)' : 'rgba(255,0,0,0.15)',
+                                  color: points >= 0 ? '#00ff00' : '#ff4444',
+                                  border: points >= 0 ? '2px solid #00ff00' : '2px solid #ff4444',
+                                  fontWeight: 'bold',
+                                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                                }}>
+                                  {points >= 0 ? '+' : ''}{points.toFixed(1)}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
 
           <div style={styles.formGroup}>
             <label style={styles.label}>Notes</label>
@@ -409,7 +485,7 @@ const CreateSession = () => {
             />
           </div>
 
-          {rounds.length > 0 && (
+          {!isBiddingMode && rounds.length > 0 && (
             <div style={styles.previewSection}>
               <button
                 type="button"
@@ -453,7 +529,7 @@ const CreateSession = () => {
             </div>
           )}
 
-          {rounds.length >= 4 && (
+          {!isBiddingMode && rounds.length >= 4 && (
             <button
               type="button"
               onClick={() => setShowWinnerModal(true)}
@@ -463,26 +539,48 @@ const CreateSession = () => {
             </button>
           )}
 
+          {isBiddingMode && isBiddingPaid && rounds.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowWinnerModal(true)}
+              style={styles.declareWinnerBtn}
+            >
+              🏆 Declare Winner 🏆
+            </button>
+          )}
+
+
+
           <button type="submit" style={styles.submitBtn} disabled={loading}>
-            {loading ? 'Creating...' : '✓ Save Session & View Results'}
+            {loading ? 'Processing...' : (
+              (isBiddingMode && !isBiddingPaid)
+                ? 'Proceed to Payment →'
+                : '✓ Save Session & Finish'
+            )}
           </button>
+
+
         </form>
 
         {showWinnerModal && (() => {
           const totals = calculateTotalPoints();
-          const playersArray = Object.entries(totals).map(([name, points]) => ({
+          const playersArray = playerNames.filter(n => n.trim()).map(name => ({
             name,
-            totalPoints: points
+            totalPoints: totals[name] || 0
           }));
           const winner = playersArray.reduce((max, p) =>
             p.totalPoints > max.totalPoints ? p : max, playersArray[0]
           );
+
           return (
             <WinnerModal
               winnerName={winner.name}
               winnerScore={winner.totalPoints}
               allPlayers={playersArray}
               onClose={() => setShowWinnerModal(false)}
+              isBiddingGame={isBiddingMode}
+              totalPool={isBiddingMode ? (bidTier?.amount * 4) : 0}
+              sessionId="New"
             />
           );
         })()}
@@ -496,13 +594,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     maxWidth: '1000px',
     margin: '0 auto',
     padding: '1rem',
-    background: 'linear-gradient(135deg, #0f5132 0%, #1a4d2e 50%, #0f5132 100%)',
+    background: 'linear-gradient(135deg, #0f5132 0%, #1a4d2e 40%, #451010 100%)',
     minHeight: '100vh',
     backgroundImage: `
       radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(220,20,60,0.05) 0%, transparent 50%),
       repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px)
     `,
+
   },
   headerSection: {
     display: 'flex',
@@ -521,12 +620,15 @@ const styles: { [key: string]: React.CSSProperties } = {
     letterSpacing: '1px',
   },
   form: {
-    backgroundColor: '#1e5128',
-    padding: '1.5rem',
-    borderRadius: '20px',
+    backgroundColor: 'rgba(30, 81, 40, 0.95)',
+    padding: '2rem',
+    borderRadius: '24px',
     boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 3px rgba(255,255,255,0.1)',
     border: '3px solid #ffd700',
+    borderRight: '5px solid #dc143c', // Red accent border
+    borderBottom: '5px solid #dc143c',
   },
+
   formGroup: {
     marginBottom: '1.5rem',
   },
@@ -581,9 +683,17 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   playerNamesGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
-    gap: '0.5rem',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: '1.25rem',
+    marginBottom: '1.5rem',
   },
+  playersGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: '1.25rem',
+    marginBottom: '1.5rem',
+  },
+
   roundsSection: {
     marginTop: '2rem',
     marginBottom: '2rem',
@@ -769,17 +879,30 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   playerInput: {
     width: '100%',
-    padding: '0.875rem',
-    border: '2px solid #ffd700',
-    borderRadius: '8px',
-    fontSize: '1rem',
-    fontWeight: '500',
-    backgroundColor: '#ffffff',
-    color: '#000000 !important',
+    padding: '1.1rem 1.25rem 1.1rem 3rem', // More left padding for icon
+    border: '2px solid rgba(255, 215, 0, 0.4)',
+    borderLeft: '6px solid #dc143c', // Bold red accent on the left
+    borderRadius: '14px',
+    fontSize: '1.1rem',
+    fontWeight: '700',
+    backgroundColor: 'rgba(30, 41, 59, 0.7)', // Slate/Dark background to break green
+    color: '#ffffff !important',
     transition: 'all 0.3s ease',
     outline: 'none',
-    WebkitTextFillColor: '#000000',
+    boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+    WebkitTextFillColor: '#ffffff',
+    boxSizing: 'border-box',
+    textAlign: 'left',
+    letterSpacing: '0.5px',
   },
+
+  playerInputFocus: {
+    border: '2px solid #ffd700',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    boxShadow: '0 0 15px rgba(255, 215, 0, 0.3)',
+    transform: 'translateY(-2px)',
+  },
+
   removeBtn: {
     background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
     color: 'white',
@@ -860,17 +983,18 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   clearBtn: {
     padding: '0.875rem 1.75rem',
-    background: 'linear-gradient(135deg, #ff8c00 0%, #ffa500 100%)',
+    background: 'linear-gradient(135deg, #dc143c 0%, #8b0000 100%)',
     color: '#ffffff',
     border: '2px solid #ffd700',
     borderRadius: '10px',
     fontSize: '1rem',
     fontWeight: '700',
     cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    boxShadow: '0 4px 12px rgba(220,20,60,0.4)',
     transition: 'all 0.3s ease',
     whiteSpace: 'nowrap',
   },
+
   declareWinnerBtn: {
     width: '100%',
     background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
@@ -887,6 +1011,61 @@ const styles: { [key: string]: React.CSSProperties } = {
     letterSpacing: '1px',
     marginBottom: '1rem',
   },
+  biddingSection: {
+    margin: '2rem 0',
+    padding: '1.5rem',
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    borderRadius: '12px',
+    border: '2px dashed #ffd700',
+  },
+  biddingHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '1rem',
+  },
+  biddingInfo: {
+    marginTop: '1rem',
+    color: '#ffd700',
+    fontWeight: '600',
+    fontSize: '0.95rem',
+    textAlign: 'left',
+  },
+  switch: {
+    position: 'relative',
+    display: 'inline-block',
+    width: '60px',
+    height: '34px',
+    cursor: 'pointer',
+  },
+  slider: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#ccc',
+    transition: '0.4s',
+    borderRadius: '34px',
+  },
+  sliderActive: {
+    backgroundColor: '#ffd700',
+  },
+  sliderCircle: {
+    position: 'absolute',
+    height: '26px',
+    width: '26px',
+    left: '4px',
+    bottom: '4px',
+    backgroundColor: 'white',
+    transition: '0.4s',
+    borderRadius: '50%',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+  },
+  sliderCircleActive: {
+    transform: 'translateX(26px)',
+  },
 };
+
 
 export default CreateSession;

@@ -14,13 +14,17 @@ interface AuthContextType {
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  loading: boolean;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     try {
@@ -35,8 +39,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       console.error('Failed to load stored auth data:', error);
+    } finally {
+      setLoading(false);
     }
   }, []);
+
 
   const login = async (email: string, password: string) => {
     const response = await fetch(`${API_URL}/api/auth/login`, {
@@ -90,7 +97,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signup,
         logout,
         isAuthenticated: !!token,
+        loading,
       }}
+
     >
       {children}
     </AuthContext.Provider>

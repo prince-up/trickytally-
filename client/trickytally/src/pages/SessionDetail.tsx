@@ -34,7 +34,14 @@ interface Session {
   totalRounds: number;
   location: string;
   notes: string;
+  isBiddingGame?: boolean;
+  bidTier?: number;
+  bidAmount?: number;
+  totalPool?: number;
+  paymentStatus?: string;
+  winnerWithdrawn?: boolean;
 }
+
 
 const SessionDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,6 +50,8 @@ const SessionDetail = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [showWinnerModal, setShowWinnerModal] = useState(false);
+
+
 
   useEffect(() => {
     fetchSession();
@@ -81,6 +90,26 @@ const SessionDetail = () => {
       alert('Failed to delete session');
     }
   };
+
+  const handleWithdraw = async () => {
+    const amount = (session?.totalPool || 0) * 0.93;
+    const message = `Withdrawal Requested!
+    
+To receive your ₹${amount.toFixed(2)} payout, please contact our support system:
+
+WhatsApp: 7986614646
+Text "Winner Money" along with your Session ID: ${session?._id}
+
+I will verify and send your money immediately!`;
+
+    if (window.confirm(message)) {
+      // Open WhatsApp
+      window.open(`https://wa.me/917986614646?text=Winner Money - Session: ${session?._id}`, '_blank');
+    }
+  };
+
+
+
 
   if (loading) {
     return (
@@ -131,18 +160,43 @@ const SessionDetail = () => {
             </p>
           </div>
           <div style={styles.actionButtons}>
-            <button
-              type="button"
-              onClick={() => setShowWinnerModal(true)}
-              style={styles.winnerBtn}
-            >
-              🏆 Declare Winner
-            </button>
+            {session.rounds && session.rounds.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowWinnerModal(true)}
+                style={styles.winnerBtn}
+              >
+                🏆 Declare Winner
+              </button>
+            )}
+
+
+
             <button onClick={handleDelete} style={styles.deleteBtn}>
               Delete Session
             </button>
           </div>
         </div>
+
+        {session.isBiddingGame && (
+          <div style={styles.biddingBanner}>
+            <div style={styles.biddingBannerContent}>
+              <span style={styles.biddingBadge}>BIDDING MATCH</span>
+              <span style={styles.poolInfo}>Total Pool: <strong>₹{session.totalPool}</strong> (Tier {session.bidTier})</span>
+              {session.paymentStatus === 'Withdrawn' ? (
+                <span style={styles.withdrawnBadge}>✓ WITHDRAWN</span>
+              ) : (
+                winner?.name && !session.winnerWithdrawn && session.rounds.length > 0 && (
+                  <button onClick={handleWithdraw} style={styles.withdrawBtn}>
+                    Withdraw Winner's Share (93%)
+                  </button>
+                )
+              )}
+
+            </div>
+          </div>
+        )}
+
 
         <div style={styles.grid}>
           <div style={styles.infoCard}>
@@ -213,8 +267,12 @@ const SessionDetail = () => {
         </div>
 
         <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Round-by-Round Details</h2>
+          <div style={styles.sectionHeader}>
+            <h2 style={styles.sectionTitle}>Round-by-Round Details</h2>
+          </div>
+
           {session.rounds && session.rounds.length > 0 ? (
+
             session.rounds.map((round) => (
               <div key={round.roundNumber} style={styles.roundCard}>
                 <h3 style={styles.roundTitle}>
@@ -273,12 +331,17 @@ const SessionDetail = () => {
             winnerScore={winner.totalPoints}
             allPlayers={session.players}
             onClose={() => setShowWinnerModal(false)}
+            isBiddingGame={session.isBiddingGame}
+            totalPool={session.totalPool}
+            sessionId={session._id}
           />
+
         )}
       </div>
     </>
   );
 };
+
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
@@ -491,6 +554,191 @@ const styles: { [key: string]: React.CSSProperties } = {
     lineHeight: '1.8',
     fontSize: '1.05rem',
   },
+  biddingBanner: {
+    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+    padding: '1rem 1.5rem',
+    borderRadius: '12px',
+    border: '2px solid #ffd700',
+    marginBottom: '2rem',
+    boxShadow: '0 4px 15px rgba(255,215,0,0.2)',
+  },
+  biddingBannerContent: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '1rem',
+  },
+  biddingBadge: {
+    backgroundColor: '#ffd700',
+    color: '#000',
+    padding: '4px 12px',
+    borderRadius: '20px',
+    fontWeight: 'bold',
+    fontSize: '0.8rem',
+    letterSpacing: '0.5px',
+  },
+  poolInfo: {
+    color: '#ffffff',
+    fontSize: '1.1rem',
+  },
+  withdrawBtn: {
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    color: '#fff',
+    padding: '0.6rem 1.2rem',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: '0.9rem',
+    boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
+    transition: 'all 0.3s ease',
+  },
+  withdrawnBadge: {
+    color: '#10b981',
+    fontWeight: 'bold',
+    fontSize: '1rem',
+    letterSpacing: '1px',
+    textShadow: '0 0 10px rgba(16,185,129,0.3)',
+  },
+  sectionHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '1rem',
+  },
+  addRoundBtnTop: {
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    color: 'white',
+    padding: '0.875rem 1.75rem',
+    border: '2px solid #ffd700',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    fontWeight: '700',
+    boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
+    transition: 'all 0.3s ease',
+    whiteSpace: 'nowrap',
+  },
+  addRoundBtn: {
+    background: 'linear-gradient(135deg, #ffd700 0%, #ff8c00 100%)',
+
+    color: '#000',
+    padding: '0.6rem 1.2rem',
+    border: 'none',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: '0.9rem',
+    boxShadow: '0 4px 12px rgba(255,215,0,0.3)',
+    transition: 'all 0.3s ease',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    backdropFilter: 'blur(4px)',
+  },
+  modalContent: {
+    backgroundColor: '#1a4d2e',
+    padding: '2rem',
+    borderRadius: '20px',
+    border: '3px solid #ffd700',
+    width: '90%',
+    maxWidth: '500px',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+  },
+  modalTitle: {
+    color: '#ffd700',
+    fontSize: '1.8rem',
+    marginBottom: '1.5rem',
+    textAlign: 'center',
+  },
+  modalSelect: {
+    width: '100%',
+    padding: '0.8rem',
+    borderRadius: '8px',
+    border: '2px solid #ffd700',
+    fontSize: '1rem',
+    marginBottom: '1rem',
+  },
+  scoresGrid: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+    marginBottom: '2rem',
+  },
+  scoreInputRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '0.8rem',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: '10px',
+  },
+  playerNameLabel: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  inputsContainer: {
+    display: 'flex',
+    gap: '1rem',
+  },
+  fieldItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '0.3rem',
+  },
+  tinyLabel: {
+    fontSize: '0.7rem',
+    color: '#ffd700',
+    textTransform: 'uppercase',
+  },
+  modalInput: {
+    width: '60px',
+    padding: '0.5rem',
+    borderRadius: '6px',
+    border: '2px solid #ffd700',
+    textAlign: 'center',
+    fontSize: '1rem',
+    fontWeight: 'bold',
+  },
+  modalActions: {
+    display: 'flex',
+    gap: '1rem',
+  },
+  cancelBtn: {
+    flex: 1,
+    padding: '1rem',
+    borderRadius: '10px',
+    border: '2px solid #ffd700',
+    backgroundColor: 'transparent',
+    color: '#ffd700',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+  },
+  saveBtn: {
+    flex: 2,
+    padding: '1rem',
+    borderRadius: '10px',
+    border: 'none',
+    backgroundColor: '#ffd700',
+    color: '#000',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    boxShadow: '0 4px 15px rgba(255,215,0,0.3)',
+  }
 };
+
+
 
 export default SessionDetail;

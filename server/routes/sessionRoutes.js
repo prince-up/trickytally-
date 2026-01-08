@@ -20,8 +20,10 @@ const {
     getSession,
     createSession,
     updateSession,
-    deleteSession
+    deleteSession,
+    withdrawPayout
 } = require('../controllers/sessionController');
+
 const { protect } = require('../middleware/authMiddleware');
 
 // All routes are protected
@@ -48,5 +50,7 @@ router.get('/:id/stats', getDashboardStats);      // Get dashboard stats
 // Legacy routes for backward compatibility
 router.put('/:id', updateSession);
 router.delete('/:id', deleteSession);
+router.post('/:id/withdraw', withdrawPayout);
+
 
 module.exports = router;

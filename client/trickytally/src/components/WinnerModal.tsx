@@ -5,9 +5,22 @@ interface WinnerModalProps {
     winnerScore: number;
     allPlayers: { name: string; totalPoints: number }[];
     onClose: () => void;
+    isBiddingGame?: boolean;
+    totalPool?: number;
+    sessionId?: string;
 }
 
-const WinnerModal: React.FC<WinnerModalProps> = ({ winnerName, winnerScore, allPlayers, onClose }) => {
+
+const WinnerModal: React.FC<WinnerModalProps> = ({
+    winnerName,
+    winnerScore,
+    allPlayers,
+    onClose,
+    isBiddingGame,
+    totalPool,
+    sessionId
+}) => {
+
     // Collection of celebratory shayari for the winner
     const shayariCollection = [
         {
@@ -116,6 +129,32 @@ const WinnerModal: React.FC<WinnerModalProps> = ({ winnerName, winnerScore, allP
                             ))}
                     </div>
                 </div>
+
+                {/* Bidding Withdrawal Info */}
+                {isBiddingGame && totalPool && (
+                    <div style={styles.biddingSupportCard}>
+                        <h3 style={styles.supportTitle}>💰 Bidding Match Reward 💰</h3>
+                        <p style={styles.supportText}>
+                            Congratulations! As the winner, you are eligible for the prize pool.
+                        </p>
+                        <div style={styles.payoutAmount}>
+                            <span>Your Reward (93%):</span>
+                            <strong>₹{(totalPool * 0.93).toFixed(2)}</strong>
+                        </div>
+                        <div style={styles.supportContact}>
+                            <p>To claim, WhatsApp me at:</p>
+                            <a
+                                href={`https://wa.me/917986614646?text=Winner Money - Session: ${sessionId || 'New'}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={styles.whatsappBtn}
+                            >
+                                Send "Winner Money" (7986614646)
+                            </a>
+                        </div>
+                    </div>
+                )}
+
 
                 {/* Close Button */}
                 <button style={styles.closeBtn} onClick={onClose}>
@@ -316,7 +355,50 @@ const styles: { [key: string]: React.CSSProperties } = {
         textTransform: 'uppercase',
         letterSpacing: '1px',
     },
+    biddingSupportCard: {
+        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+        borderRadius: '12px',
+        padding: '1.5rem',
+        marginBottom: '2rem',
+        border: '2px dashed #ffd700',
+        textAlign: 'center',
+    },
+    supportTitle: {
+        color: '#ffd700',
+        fontSize: '1.2rem',
+        marginBottom: '0.8rem',
+    },
+    supportText: {
+        color: '#ffffff',
+        fontSize: '0.9rem',
+        marginBottom: '1rem',
+    },
+    payoutAmount: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '1rem',
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        borderRadius: '8px',
+        marginBottom: '1.5rem',
+    },
+    supportContact: {
+        marginTop: '1rem',
+    },
+    whatsappBtn: {
+        display: 'inline-block',
+        backgroundColor: '#25D366',
+        color: 'white',
+        padding: '10px 20px',
+        borderRadius: '30px',
+        textDecoration: 'none',
+        fontWeight: 'bold',
+        fontSize: '1rem',
+        marginTop: '0.5rem',
+        boxShadow: '0 4px 12px rgba(37,211,102,0.3)',
+    }
 };
+
 
 // Add CSS animations via a style tag
 if (typeof document !== 'undefined') {

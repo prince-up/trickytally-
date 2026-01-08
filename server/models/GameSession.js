@@ -84,8 +84,36 @@ const gameSessionSchema = new mongoose.Schema(
         notes: {
             type: String,
             default: ''
+        },
+        // Bidding system fields
+        isBiddingGame: {
+            type: Boolean,
+            default: false
+        },
+        bidTier: {
+            type: Number,
+            enum: [0, 1, 2, 3, 4], // 0 for no bid, 1-4 for layers
+            default: 0
+        },
+        bidAmount: {
+            type: Number,
+            default: 0
+        },
+        totalPool: {
+            type: Number,
+            default: 0
+        },
+        paymentStatus: {
+            type: String,
+            enum: ['Pending', 'Paid', 'Withdrawn', 'None'],
+            default: 'None'
+        },
+        winnerWithdrawn: {
+            type: Boolean,
+            default: false
         }
     },
+
     { timestamps: true }
 );
 
